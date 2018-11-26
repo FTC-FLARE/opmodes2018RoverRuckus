@@ -30,16 +30,15 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.opmodes12833.MM_Tensorflow;
 
 public class MM_Test_Bot
 {
     public MM_Tensorflow tensorflow = null;
     public MM_DriveTrain drivetrain = null;
+    public MM_Arm arm = null;
+    public MM_Collector collector = null;
+    public MM_Latch latch = null;
 
     private ElapsedTime period  = new ElapsedTime();
 
@@ -54,6 +53,9 @@ public class MM_Test_Bot
     public void init() {
         tensorflow = new MM_Tensorflow(opMode);
         drivetrain = new MM_DriveTrain(opMode);
+        arm = new MM_Arm(opMode);
+        collector = new MM_Collector(opMode);
+        latch = new MM_Latch(opMode);
     }
 }
 
