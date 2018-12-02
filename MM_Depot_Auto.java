@@ -73,10 +73,11 @@ public class MM_Depot_Auto extends LinearOpMode {
 
         robot.drivetrain.composeTelemetry();
 
-        telemetry.addData(">", "Press Play");
+        //telemetry.addData(">", "Press Play");
         telemetry.update();
         waitForStart();
-        robot.drivetrain.pushMineralDepot(robot);
+        robot.drivetrain.encoderDrive(.5, 0, 0, 20, 0, 20);
+        //robot.drivetrain.pushMineralDepot(robot);
     }
 }
 

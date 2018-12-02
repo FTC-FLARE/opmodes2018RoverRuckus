@@ -53,7 +53,8 @@ public class MM_Crater_Auto extends LinearOpMode {
         telemetry.addData(">", "Press Play");
         telemetry.update();
         waitForStart();
-        robot.drivetrain.pushMineralCrater(robot);
+        robot.tensorflow.detectGoldMineral();
+        robot.drivetrain.strafeMineralCrater(robot);
     }
 }
 

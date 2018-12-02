@@ -20,14 +20,31 @@ public class MM_Tensorflow {
     private TFObjectDetector tfod;
 
 
-
     public MM_Tensorflow(LinearOpMode opMode) {
         this.opMode = opMode;
         initVuforia();
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
             initTfod();
-       }
+        }
     }
+
+    public void initVuforia() {
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+    }
+
+    public void initTfod() {
+        int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+    }
+
     public String detectGoldMineral() {
         String goldMineralLocation = "";
         /** Activate Tensor Flow Object Detection. */
@@ -40,7 +57,8 @@ public class MM_Tensorflow {
             // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                if (updatedRecognitions.size() == 3) {
+                opMode.telemetry.addData("# Object Detected", updatedRecognitions.size());
+                if (updatedRecognitions.size() == 2) {
                     int goldMineralX = -1;
                     int silverMineral1X = -1;
                     int silverMineral2X = -1;
@@ -53,33 +71,28 @@ public class MM_Tensorflow {
                             silverMineral2X = (int) recognition.getLeft();
                         }
                     }
-                    if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                        if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                            goldMineralLocation = "Left";
-                        } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
+                    if (goldMineralX == -1) {
+                        opMode.telemetry.addData("Gold Mineral Position", "Left");
+                        goldMineralLocation = "Left";
+                    }
+
+                    if ((goldMineralX != -1 && silverMineral1X != -1)) {
+                        if (goldMineralX > silverMineral1X) {
+                            opMode.telemetry.addData("Gold Mineral Position", "Right");
                             goldMineralLocation = "Right";
-                        } else {
+                            opMode.telemetry.addData("Gold", goldMineralX);
+                            opMode.telemetry.addData("Silver", silverMineral1X);
+                        } else if (goldMineralX < silverMineral1X) {
+                            opMode.telemetry.addData("Gold Mineral Position", "Center");
                             goldMineralLocation = "Center";
                         }
                     }
                 }
+                opMode.telemetry.update();
             }
         }
         return goldMineralLocation;
     }
-    public void initVuforia() {
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-    }
-    public void initTfod() {
-        int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
-    }
 }
+
+

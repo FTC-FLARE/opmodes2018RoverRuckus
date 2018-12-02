@@ -27,11 +27,16 @@ public class MM_DriveTrain{
     public DcMotor backleft = null;
     public DcMotor backright = null;
 
-    static final double COUNTS_PER_MOTOR_REV = 1120;    // eg: TETRIX Motor Encoder
+    static final double COUNTS_PER_MOTOR_REV = 1680;    // eg: TETRIX Motor Encoder
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
     static final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
+
+    static final double TICKS_PER_INCH = COUNTS_PER_INCH * DRIVE_GEAR_REDUCTION / WHEEL_DIAMETER_INCHES * 3.14159;
+    static final double MOTOR_RPM = 160;
+    static final double DRIVE_RPS = MOTOR_RPM / 60;
+    static final double DRIVE_INCHES_PER_SEC = DRIVE_RPS * WHEEL_DIAMETER_INCHES * Math.PI;
 
     Acceleration gravity;
     private ElapsedTime runtime = new ElapsedTime();
@@ -40,10 +45,10 @@ public class MM_DriveTrain{
     public MM_DriveTrain(LinearOpMode opMode){
         // Define and Initialize Motors
         this.opMode = opMode;
-        frontleft = opMode.hardwareMap.get(DcMotor.class, "flmotor");
-        frontright = opMode.hardwareMap.get(DcMotor.class, "frmotor");
-        backleft = opMode.hardwareMap.get(DcMotor.class, "blmotor");
-        backright = opMode.hardwareMap.get(DcMotor.class, "brmotor");
+        frontleft = opMode.hardwareMap.get(DcMotor.class, "flMotor");
+        frontright = opMode.hardwareMap.get(DcMotor.class, "frMotor");
+        backleft = opMode.hardwareMap.get(DcMotor.class, "blMotor");
+        backright = opMode.hardwareMap.get(DcMotor.class, "brMotor");
 
         frontleft.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
         frontright.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
@@ -97,6 +102,9 @@ public class MM_DriveTrain{
             while (opMode.opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
                     (frontleft.isBusy() || frontright.isBusy() || backleft.isBusy() || backright.isBusy())) {
+                opMode.telemetry.addData("current", backleft.getCurrentPosition());
+                opMode.telemetry.addData("target", backleft.getTargetPosition());
+
                 opMode.telemetry.update();
             }
 
@@ -121,6 +129,20 @@ public class MM_DriveTrain{
         backleft.setPower(.6);
         backright.setPower(.6);
     }
+    public void strafeRightPower() {
+        frontleft.setPower(1);
+        frontright.setPower(-1);
+        backleft.setPower(-1);
+        backright.setPower(1);
+    }
+    public void strafeLeftPower() {
+        frontleft.setPower(.9);
+        frontright.setPower(-.9);
+        backleft.setPower(-.9);
+        backright.setPower(.9);
+    }
+
+
     public void stopMotors(){
         frontleft.setPower(0);
         frontright.setPower(0);
@@ -158,6 +180,26 @@ public class MM_DriveTrain{
     public void driveUntilCrater(){
         runtime.reset();
         constantPower();
+        while ((angles.secondAngle) > -3.0 && opMode.opModeIsActive()){
+            opMode.telemetry.addData("Angle", angles.secondAngle);
+            opMode.telemetry.addData("Time", runtime.seconds());
+            opMode.telemetry.update();
+        }
+        stopMotors();
+    }
+    public void strafeRightUntilCrater(){
+        runtime.reset();
+        strafeRightPower();
+        while ((angles.thirdAngle) > -3.5 && opMode.opModeIsActive() && runtime.seconds() < 2){
+            opMode.telemetry.addData("Angle", angles.thirdAngle);
+            opMode.telemetry.addData("Time", runtime.seconds());
+            opMode.telemetry.update();
+        }
+        stopMotors();
+    }
+    public void strafeLeftUntilCrater(){
+        runtime.reset();
+        strafeLeftPower();
         while ((angles.secondAngle) > -3.0 && opMode.opModeIsActive()){
             opMode.telemetry.addData("Angle", angles.secondAngle);
             opMode.telemetry.addData("Time", runtime.seconds());
@@ -239,20 +281,39 @@ public class MM_DriveTrain{
             goldMineralLocation = robot.tensorflow.detectGoldMineral();
         }
 
-        encoderDrive(.7, 15, 15, 15, 15, 20);
-
         if (goldMineralLocation.equals("Left")) {
-            encoderDrive(.7, -18, 18, 18, -18, 20); // strafe
-            driveUntilCrater();
+            encoderDrive(.7, 18, 18, 18, 18, 20); // drive forward
+            strafeRightUntilCrater();
         } else if (goldMineralLocation.equals("Right")) {
-            encoderDrive(.7, 18, -18, -18, 18, 20); // strafe
-            driveUntilCrater();
+            encoderDrive(.7, -18, -18, -18, -18, 20); // drive backwards
+            strafeRightUntilCrater();
         } else {
             opMode.telemetry.addData("Location", goldMineralLocation);
-            driveUntilCrater();
+            strafeRightUntilCrater();
         }
 
     }
+    public void strafeMineralCrater(MM_Test_Bot robot){
+        while (goldMineralLocation.equals("")) {
+            goldMineralLocation = robot.tensorflow.detectGoldMineral();
+        }
+
+        encoderDrive(.9, 13, -13, -13, 13, 20);
+        encoderDrive(.9, 6, 6, 6, 6, 20);
+
+        if (goldMineralLocation.equals("Left")) {
+            encoderDrive(.9, 18, 18, 18, 18, 20); // drive forward
+            strafeRightUntilCrater();
+        } else if (goldMineralLocation.equals("Right")) {
+            encoderDrive(.9, -18, -18, -18, -18, 20); //
+            strafeRightUntilCrater();
+        } else {
+            opMode.telemetry.addData("Location", goldMineralLocation);
+            strafeRightUntilCrater();
+        }
+
+    }
+
     public void pushMineralDepot(MM_Test_Bot robot){
         while (goldMineralLocation.equals("")) {
             goldMineralLocation = robot.tensorflow.detectGoldMineral();
@@ -272,9 +333,4 @@ public class MM_DriveTrain{
         }
 
     }
-
-
-
-
-
 }
