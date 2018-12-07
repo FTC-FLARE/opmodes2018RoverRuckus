@@ -35,7 +35,7 @@ public class DeployOnly extends LinearOpMode {
     private void deploy() {
 
         liftMotor.setPower(1);
-        while (liftMotor.getCurrentPosition() <= 30000 && opModeIsActive()) {
+        while (liftMotor.getCurrentPosition() <= 20900 && opModeIsActive()) {
             telemetry.addData("Lift Encoder", liftMotor.getCurrentPosition());
             telemetry.update();
         }
