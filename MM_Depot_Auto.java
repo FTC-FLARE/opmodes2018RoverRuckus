@@ -29,57 +29,37 @@
 
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcontroller.external.samples.Test_Bot;
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.Func;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
-import java.util.EventListenerProxy;
-import java.util.List;
-import java.util.Locale;
 
 @Autonomous(name = "Mechanical Meltdown Depot Auto", group = "Kishan")
 //@Disabled
 public class MM_Depot_Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
+    private String goldMineralLocation = "";
 
-    MM_Test_Bot robot = new MM_Test_Bot(this);
+    MM_Tote_Bot robot = new MM_Tote_Bot(this);
     @Override
     public void runOpMode() {
         robot.init();
-        robot.drivetrain.initializeGyro();
-        robot.drivetrain.composeTelemetry();
         telemetry.addLine("Done with Init");
         telemetry.update();
         runtime.reset();
 
-        robot.drivetrain.composeTelemetry();
-
-        //telemetry.addData(">", "Press Play");
+        telemetry.addData(">", "Press Play");
         telemetry.update();
+
         waitForStart();
-        robot.drivetrain.encoderDrive(.5, 0, 0, 20, 0, 20);
-        //robot.drivetrain.pushMineralDepot(robot);
+
+        robot.lift.deploy();
+        robot.drivetrain.gyroTurn(.4, 0);
+        robot.drivetrain.backward(1, 5, 5);
+        robot.drivetrain.strafeLeft(1, .5, 2);
+        goldMineralLocation = robot.tensorflow.detectGoldMineral();
+        robot.drivetrain.strafeRight(1, 5, 5);
+        robot.drivetrain.forward(1, 7, 5);
+        robot.drivetrain.gyroTurn(.6, -90);
+        robot.pushMineralCrater(goldMineralLocation);
     }
 }
-
-
-

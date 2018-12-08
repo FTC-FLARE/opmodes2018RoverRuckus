@@ -38,24 +38,29 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class MM_Crater_Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
-    MM_Test_Bot robot = new MM_Test_Bot(this);
+    MM_Tote_Bot robot = new MM_Tote_Bot(this);
+    String goldMineralLocation = "";
     @Override
     public void runOpMode() {
         robot.init();
-        robot.drivetrain.initializeGyro();
-        robot.drivetrain.composeTelemetry();
         telemetry.addLine("Done with Init");
         telemetry.update();
         runtime.reset();
 
-        robot.drivetrain.composeTelemetry();
-
         telemetry.addData(">", "Press Play");
         telemetry.update();
+
         waitForStart();
-        robot.tensorflow.detectGoldMineral();
-        robot.drivetrain.strafeMineralCrater(robot);
+
+        robot.lift.deploy();
+        robot.moveAwayFromLander();
+        goldMineralLocation = robot.tensorflow.detectGoldMineral();
+        telemetry.addData("gold", goldMineralLocation);
+        telemetry.update();
+        robot.alignWithMinerals();
+        robot.pushMineralCrater(goldMineralLocation);
     }
+
 }
 
 

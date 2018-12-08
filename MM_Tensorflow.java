@@ -20,7 +20,8 @@ public class MM_Tensorflow {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
     private ElapsedTime runtime = new ElapsedTime();
-
+    private double goldMineralX = -1;
+    private double silverMineralX = -1;
 
     public MM_Tensorflow(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -60,24 +61,24 @@ public class MM_Tensorflow {
                 if (updatedRecognitions != null) {
                     opMode.telemetry.addData("# Object Detected", updatedRecognitions.size());
                     if (updatedRecognitions.size() == 2) { // if we detected 2 and only 2 minerals
-                        int goldMineralX = -1;
-                        int silverMineralX = -1;
                         for (Recognition recognition : updatedRecognitions) { //runs through logic for each mineral detected
                             if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                goldMineralX = (int) recognition.getLeft();
+                                goldMineralX = recognition.getLeft();
                             } else {
-                                silverMineralX = (int) recognition.getLeft();
+                                silverMineralX = recognition.getLeft();
                             }
                         }
-                        if (goldMineralX == -1) { // Only see two silver minerals
+                        if (getGoldMineralX() == -1) { // Only see two silver minerals
                             goldMineralLocation = "Left";
                         } else { // We see a gold mineral
-                            if (goldMineralX > silverMineralX) { // Determine gold mineral location
+                            if (getGoldMineralX() > getSilverMineralX()) { // Determine gold mineral location
                                 goldMineralLocation = "Right";
                             } else {
                                 goldMineralLocation = "Center";
                             }
                         }
+                        opMode.telemetry.addData("GoldX", getGoldMineralX());
+                        opMode.telemetry.addData("SilverX", getSilverMineralX());
                     }
                     opMode.telemetry.addData("Gold Mineral Position",goldMineralLocation);
                     opMode.telemetry.update();
@@ -89,6 +90,14 @@ public class MM_Tensorflow {
             return goldMineralLocation;
         }
         return "Left";
+    }
+
+    public double getGoldMineralX() {
+        return goldMineralX;
+    }
+
+    public double getSilverMineralX() {
+        return silverMineralX;
     }
 }
 

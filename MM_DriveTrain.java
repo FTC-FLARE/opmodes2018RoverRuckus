@@ -1,185 +1,171 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Func;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
-import java.util.Locale;
+public class MM_DriveTrain {
 
-public class MM_DriveTrain{
-    BNO055IMU imu;
-    Orientation angles;
+    private BNO055IMU imu;
 
-    public DcMotor frontleft = null;
-    public DcMotor frontright = null;
-    public DcMotor backleft = null;
-    public DcMotor backright = null;
+    private DcMotor flMotor = null;
+    private DcMotor frMotor = null;
+    private DcMotor blMotor = null;
+    private DcMotor brMotor = null;
 
-    static final double COUNTS_PER_MOTOR_REV = 1680;    // eg: TETRIX Motor Encoder
+    static final double COUNTS_PER_MOTOR_REV = 1680;    // 60:1
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
-    static final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
+    static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double DRIVE_POWER = 0.6;
+    static final double STRAFE_POWER = 1;
 
-    static final double TICKS_PER_INCH = COUNTS_PER_INCH * DRIVE_GEAR_REDUCTION / WHEEL_DIAMETER_INCHES * 3.14159;
-    static final double MOTOR_RPM = 160;
-    static final double DRIVE_RPS = MOTOR_RPM / 60;
-    static final double DRIVE_INCHES_PER_SEC = DRIVE_RPS * WHEEL_DIAMETER_INCHES * Math.PI;
-
-    Acceleration gravity;
     private ElapsedTime runtime = new ElapsedTime();
-    String goldMineralLocation = "";
     private LinearOpMode opMode;
+    private Orientation angles;
+
+    static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
+    static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
+
     public MM_DriveTrain(LinearOpMode opMode){
-        // Define and Initialize Motors
         this.opMode = opMode;
-        frontleft = opMode.hardwareMap.get(DcMotor.class, "flMotor");
-        frontright = opMode.hardwareMap.get(DcMotor.class, "frMotor");
-        backleft = opMode.hardwareMap.get(DcMotor.class, "blMotor");
-        backright = opMode.hardwareMap.get(DcMotor.class, "brMotor");
+        flMotor = opMode.hardwareMap.get(DcMotor.class, "flMotor");
+        frMotor = opMode.hardwareMap.get(DcMotor.class, "frMotor");
+        blMotor = opMode.hardwareMap.get(DcMotor.class, "blMotor");
+        brMotor = opMode.hardwareMap.get(DcMotor.class, "brMotor");
 
-        frontleft.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
-        frontright.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
-        backleft.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
-        backright.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
+        flMotor.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
+        frMotor.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
+        blMotor.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
+        brMotor.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
 
-        // Set all motors to zero power
-        frontleft.setPower(0);
-        frontright.setPower(0);
-        backleft.setPower(0);
-        backright.setPower(0);
+        setMotorPowerSame(0);
 
         initializeGyro();
         initHardware();
+//        composeTelemetry();
     }
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches, double timeoutS) {
-        int newFrontLeftTarget;
-        int newFrontRightTarget;
-        int newBackLeftTarget;
-        int newBackRightTarget;
-
-        // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
-            // Determine new target position, and pass to motor controller
-            newFrontLeftTarget = frontleft.getCurrentPosition() + (int) (frontLeftInches * COUNTS_PER_INCH);
-            newFrontRightTarget = frontright.getCurrentPosition() + (int) (frontRightInches * COUNTS_PER_INCH);
-            newBackLeftTarget = backleft.getCurrentPosition() + (int) (backLeftInches * COUNTS_PER_INCH);
-            newBackRightTarget = backright.getCurrentPosition() + (int) (backRightInches * COUNTS_PER_INCH);
+            setNewMotorTarget(frontLeftInches, frontRightInches, backLeftInches, backRightInches);
+            setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-
-            frontleft.setTargetPosition(newFrontLeftTarget);
-            frontright.setTargetPosition(newFrontRightTarget);
-            backleft.setTargetPosition(newBackLeftTarget);
-            backright.setTargetPosition(newBackRightTarget);
-
-            // Turn On RUN_TO_POSITION
-            frontleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            // reset the timeout time and start motion.
             runtime.reset();
-            frontleft.setPower(Math.abs(speed));
-            frontright.setPower(Math.abs(speed));
-            backleft.setPower(Math.abs(speed));
-            backright.setPower(Math.abs(speed));
+            setMotorPowerSame(speed);
 
             while (opMode.opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (frontleft.isBusy() || frontright.isBusy() || backleft.isBusy() || backright.isBusy())) {
-                opMode.telemetry.addData("current", backleft.getCurrentPosition());
-                opMode.telemetry.addData("target", backleft.getTargetPosition());
-
-                opMode.telemetry.update();
+                    (flMotor.isBusy() || frMotor.isBusy() || blMotor.isBusy() || brMotor.isBusy())) {
+                encoderTelemetry();
             }
-
-            // Stop all motion;
-            frontleft.setPower(0);
-            frontright.setPower(0);
-            backleft.setPower(0);
-            backright.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            //  sleep(250);   // optional pause after each move
+            setMotorPowerSame(0);
+            setUsingEncoder();
         }
     }
-    public void constantPower() {
-        frontleft.setPower(.6);
-        frontright.setPower(.6);
-        backleft.setPower(.6);
-        backright.setPower(.6);
+    public void forward(double speed, double inches, double timeOutS){
+        encoderDrive(speed, inches, inches, inches, inches, timeOutS);
     }
-    public void strafeRightPower() {
-        frontleft.setPower(1);
-        frontright.setPower(-1);
-        backleft.setPower(-1);
-        backright.setPower(1);
+    public void backward(double speed, double inches, double timeOutS){
+        encoderDrive(speed, -inches, -inches, -inches, -inches, timeOutS);
     }
-    public void strafeLeftPower() {
-        frontleft.setPower(.9);
-        frontright.setPower(-.9);
-        backleft.setPower(-.9);
-        backright.setPower(.9);
+    public void strafeRight(double speed, double inches, double timeOutS){
+        encoderDrive(speed, inches, -inches, -inches, inches, timeOutS);
+    }
+    public void strafeLeft(double speed, double inches, double timeOutS){
+        encoderDrive(speed, -inches, inches, inches, -inches, timeOutS);
+    }
+    private void encoderTelemetry() {
+        opMode.telemetry.addData("fl current", flMotor.getCurrentPosition());
+        opMode.telemetry.addData("   target", flMotor.getTargetPosition());
+
+        opMode.telemetry.addData("fr current", frMotor.getCurrentPosition());
+        opMode.telemetry.addData("   target", frMotor.getTargetPosition());
+
+        opMode.telemetry.addData("bl current", blMotor.getCurrentPosition());
+        opMode.telemetry.addData("   target", blMotor.getTargetPosition());
+
+        opMode.telemetry.addData("br current", brMotor.getCurrentPosition());
+        opMode.telemetry.addData("   target", brMotor.getTargetPosition());
+
+        opMode.telemetry.update();
     }
 
+    private void setNewMotorTarget(double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches) {
+        int newFrontLeftTarget = flMotor.getCurrentPosition() + (int) (frontLeftInches * COUNTS_PER_INCH);
+        int newFrontRightTarget = frMotor.getCurrentPosition() + (int) (frontRightInches * COUNTS_PER_INCH);
+        int newBackLeftTarget = blMotor.getCurrentPosition() + (int) (backLeftInches * COUNTS_PER_INCH);
+        int newBackRightTarget = brMotor.getCurrentPosition() + (int) (backRightInches * COUNTS_PER_INCH);
+
+        setEncoderTargets(newFrontLeftTarget, newFrontRightTarget, newBackLeftTarget, newBackRightTarget);
+    }
+
+    private void setMotorPowerSame(double speed) {
+        setMotorPowers(speed, speed, speed, speed);
+    }
+
+    private void setEncoderTargets(int newFrontLeftTarget, int newFrontRightTarget, int newBackLeftTarget, int newBackRightTarget) {
+        flMotor.setTargetPosition(newFrontLeftTarget);
+        frMotor.setTargetPosition(newFrontRightTarget);
+        blMotor.setTargetPosition(newBackLeftTarget);
+        brMotor.setTargetPosition(newBackRightTarget);
+    }
+    private void setMotorPowers(double flSpeed, double frSpeed, double blSpeed, double brSpeed) {
+        flMotor.setPower(flSpeed);
+        frMotor.setPower(frSpeed);
+        blMotor.setPower(blSpeed);
+        brMotor.setPower(brSpeed);
+    }
+
+    public void strafeRightPower(double power) {
+        setMotorPowers(power, -power, -power, power);
+    }
+    public void strafeLeftPower(double power) {
+        setMotorPowers(-power, power, power, -power);
+    }
 
     public void stopMotors(){
-        frontleft.setPower(0);
-        frontright.setPower(0);
-        backleft.setPower(0);
-        backright.setPower(0);
+        setMotorPowerSame(0);
     }
     public void initHardware() {
-
-        // Send telemetry message to signify robot waiting;
-        frontleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        stopAndResetEncoders();
+        setUsingEncoder();
     }
+
+    private void setUsingEncoder() {
+        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    private void stopAndResetEncoders() {
+        setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    private void setMotorMode(DcMotor.RunMode stopAndResetEncoder) {
+        flMotor.setMode(stopAndResetEncoder);
+        frMotor.setMode(stopAndResetEncoder);
+        blMotor.setMode(stopAndResetEncoder);
+        brMotor.setMode(stopAndResetEncoder);
+    }
+
     public void initializeGyro() {
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
 
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-
-        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
-
     }
     public void driveUntilCrater(){
         runtime.reset();
-        constantPower();
+        setMotorPowerSame(DRIVE_POWER);
         while ((angles.secondAngle) > -3.0 && opMode.opModeIsActive()){
             opMode.telemetry.addData("Angle", angles.secondAngle);
             opMode.telemetry.addData("Time", runtime.seconds());
@@ -189,7 +175,7 @@ public class MM_DriveTrain{
     }
     public void strafeRightUntilCrater(){
         runtime.reset();
-        strafeRightPower();
+        strafeRightPower(STRAFE_POWER);
         while ((angles.thirdAngle) > -3.5 && opMode.opModeIsActive() && runtime.seconds() < 2){
             opMode.telemetry.addData("Angle", angles.thirdAngle);
             opMode.telemetry.addData("Time", runtime.seconds());
@@ -199,7 +185,7 @@ public class MM_DriveTrain{
     }
     public void strafeLeftUntilCrater(){
         runtime.reset();
-        strafeLeftPower();
+        strafeLeftPower(STRAFE_POWER);
         while ((angles.secondAngle) > -3.0 && opMode.opModeIsActive()){
             opMode.telemetry.addData("Angle", angles.secondAngle);
             opMode.telemetry.addData("Time", runtime.seconds());
@@ -207,10 +193,10 @@ public class MM_DriveTrain{
         }
         stopMotors();
     }
-    public void driveUntilDepot(){
+    public void driveUntilDepot() {
         runtime.reset();
-        constantPower();
-        while (runtime.seconds() < 1.5 && opMode.opModeIsActive()){
+        setMotorPowerSame(DRIVE_POWER);
+        while (runtime.seconds() < 1.5 && opMode.opModeIsActive()) {
             opMode.telemetry.addData("Time", runtime.seconds());
             opMode.telemetry.update();
         }
@@ -222,115 +208,80 @@ public class MM_DriveTrain{
         opMode.telemetry.addAction(new Runnable() { @Override public void run()
         {
             angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            gravity  = imu.getGravity();
         }
         });
-
-        opMode.telemetry.addLine()
-                .addData("status", new Func<String>() {
-                    @Override public String value() {
-                        return imu.getSystemStatus().toShortString();
-                    }
-                })
-                .addData("calib", new Func<String>() {
-                    @Override public String value() {
-                        return imu.getCalibrationStatus().toString();
-                    }
-                });
-
-        opMode.telemetry.addLine()
-                .addData("heading", new Func<String>() {
-                    @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.firstAngle);
-                    }
-                })
-                .addData("roll", new Func<String>() {
-                    @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.secondAngle);
-                    }
-                })
-                .addData("pitch", new Func<String>() {
-                    @Override public String value() {
-                        return formatAngle(angles.angleUnit, angles.thirdAngle);
-                    }
-                });
-
-        opMode.telemetry.addLine()
-                .addData("grvty", new Func<String>() {
-                    @Override public String value() {
-                        return gravity.toString();
-                    }
-                })
-                .addData("mag", new Func<String>() {
-                    @Override public String value() {
-                        return String.format(Locale.getDefault(), "%.3f",
-                                Math.sqrt(gravity.xAccel*gravity.xAccel
-                                        + gravity.yAccel*gravity.yAccel
-                                        + gravity.zAccel*gravity.zAccel));
-                    }
-                });
+        opMode.telemetry.addData("heading", angles.firstAngle);
+        opMode.telemetry.addData("roll", angles.secondAngle);
+        opMode.telemetry.addData("pitch", angles.thirdAngle);
     }
-    String formatAngle(AngleUnit angleUnit, double angle) {
-        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    public double getError(double targetAngle) {
+
+        double robotError;
+
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        robotError = targetAngle - angles.firstAngle;
+        while (robotError > 180)  robotError -= 360;
+        while (robotError <= -180) robotError += 360;
+        return robotError;
     }
-    String formatDegrees(double degrees) {
-        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    public double getSteer(double error, double PCoeff) {
+        return Range.clip(error * PCoeff, -1, 1);
     }
-    public void pushMineralCrater(MM_Test_Bot robot){
-        while (goldMineralLocation.equals("")) {
-            goldMineralLocation = robot.tensorflow.detectGoldMineral();
+    public void gyroTurn (double speed, double angle) {
+        while (opMode.opModeIsActive() && !onHeading(speed, angle, P_TURN_COEFF)) {
+            opMode.telemetry.addData("current angle", angles.firstAngle);
+            opMode.telemetry.update();
+        }
+    }    boolean onHeading(double speed, double angle, double PCoeff) {
+        double   error ;
+        double   steer ;
+        boolean  onTarget = false ;
+        double leftSpeed;
+        double rightSpeed;
+
+        // determine turn power based on +/- error
+        error = getError(angle);
+
+        if (Math.abs(error) <= HEADING_THRESHOLD) {
+            steer = 0.0;
+            leftSpeed  = 0.0;
+            rightSpeed = 0.0;
+            onTarget = true;
+        }
+        else {
+            steer = getSteer(error, PCoeff);
+            rightSpeed  = speed * steer;
+            leftSpeed   = -rightSpeed;
         }
 
-        if (goldMineralLocation.equals("Left")) {
-            encoderDrive(.7, 18, 18, 18, 18, 20); // drive forward
-            strafeRightUntilCrater();
-        } else if (goldMineralLocation.equals("Right")) {
-            encoderDrive(.7, -18, -18, -18, -18, 20); // drive backwards
-            strafeRightUntilCrater();
-        } else {
-            opMode.telemetry.addData("Location", goldMineralLocation);
-            strafeRightUntilCrater();
-        }
+        // Send desired speeds to motors.
+        flMotor.setPower(leftSpeed);
+        frMotor.setPower(rightSpeed);
+        blMotor.setPower(leftSpeed);
+        brMotor.setPower(rightSpeed);
 
+        // Display it for the driver.
+        opMode.telemetry.addData("Target", "%5.2f", angle);
+        opMode.telemetry.addData("Error/Steer", "%5.2f/%5.2f", error, steer);
+        opMode.telemetry.addData("Speed.", "%5.2f:%5.2f", leftSpeed, rightSpeed);
+
+        return onTarget;
     }
-    public void strafeMineralCrater(MM_Test_Bot robot){
-        while (goldMineralLocation.equals("")) {
-            goldMineralLocation = robot.tensorflow.detectGoldMineral();
-        }
+    public void driveWithSticks() {
+        double drive = -opMode.gamepad1.left_stick_y;
+        double turn = opMode.gamepad1.right_stick_x;
+        double strafe = opMode.gamepad1.left_stick_x;
 
-        encoderDrive(.9, 13, -13, -13, 13, 20);
-        encoderDrive(.9, 6, 6, 6, 6, 20);
+        double frontLeftPower = Range.clip(drive + strafe + turn, -1.0, 1.0);
+        double frontRightPower = Range.clip(drive - strafe - turn, -1.0, 1.0);
+        double backLeftPower = Range.clip(drive - strafe + turn, -1.0, 1.0);
+        double backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
 
-        if (goldMineralLocation.equals("Left")) {
-            encoderDrive(.9, 18, 18, 18, 18, 20); // drive forward
-            strafeRightUntilCrater();
-        } else if (goldMineralLocation.equals("Right")) {
-            encoderDrive(.9, -18, -18, -18, -18, 20); //
-            strafeRightUntilCrater();
-        } else {
-            opMode.telemetry.addData("Location", goldMineralLocation);
-            strafeRightUntilCrater();
-        }
+        flMotor.setPower(frontLeftPower);
+        frMotor.setPower(frontRightPower);
+        blMotor.setPower(backLeftPower);
+        brMotor.setPower(backRightPower);
 
-    }
-
-    public void pushMineralDepot(MM_Test_Bot robot){
-        while (goldMineralLocation.equals("")) {
-            goldMineralLocation = robot.tensorflow.detectGoldMineral();
-        }
-
-        encoderDrive(.7, 16, 16, 16, 16, 20);
-
-        if (goldMineralLocation.equals("Left")) {
-            encoderDrive(.7, -18, 18, 18, -18, 20); // strafe
-            driveUntilDepot();
-        } else if (goldMineralLocation.equals("Right")) {
-            encoderDrive(.7, 18, -18, -18, 18, 20); // strafe
-            driveUntilDepot();
-        } else {
-            opMode.telemetry.addData("Location", goldMineralLocation);
-            driveUntilDepot();
-        }
-
+        opMode.telemetry.addData("","flPower %.2f - frPower %.2f - blPower %.2f - brPower %.2f", frontLeftPower, frontRightPower, backLeftPower, backRightPower);
     }
 }

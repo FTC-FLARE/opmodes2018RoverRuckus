@@ -91,11 +91,11 @@ public class MechanumDrivetrainAuto extends LinearOpMode {
         //runs after waitForStart
         //Speed always needs to be positive because I take the absolute value of speed later in the program.
 
-//        LiftMech();
+        LiftMech();
 //        encoderDrive(1,-5);
 //        encoderStrafe(15,1);
 //        encoderTurn(5, 1);
-        gyroTurn(1, 90);
+//        gyroTurn(1, 90);
     }
     public double getError(double targetAngle) {
 
@@ -110,9 +110,6 @@ public class MechanumDrivetrainAuto extends LinearOpMode {
     public double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
     }
-
-
-
     public void encoderDrive(double speed, int inches) {
 
         int newFrontLeftTarget;
@@ -219,7 +216,7 @@ public class MechanumDrivetrainAuto extends LinearOpMode {
     private void LiftMech() {
 
         liftMotor.setPower(1);
-        while (liftMotor.getCurrentPosition() <= 30000 && opModeIsActive()) {
+        while (liftMotor.getCurrentPosition() <= 20900 && opModeIsActive()) {
             telemetry.addData("Lift Encoder", liftMotor.getCurrentPosition());
             telemetry.update();
         }

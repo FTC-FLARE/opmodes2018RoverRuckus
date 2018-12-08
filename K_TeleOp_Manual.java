@@ -50,6 +50,7 @@ public class K_TeleOp_Manual extends LinearOpMode {
 
         lift = hardwareMap.get(DcMotor.class, "lift");
         lift.setDirection(DcMotor.Direction.FORWARD);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -111,6 +112,7 @@ public class K_TeleOp_Manual extends LinearOpMode {
 
             telemetry.addData("Arm Flipper Power", armFlipper.getPower());
             telemetry.addData("Slide Power", slide.getPower());
+            telemetry.addData("Lift", lift.getCurrentPosition());
             telemetry.addData("Drivetrain", " %7d :%7d : %7d : %7d", driveFrontLeft.getCurrentPosition(), driveFrontRight.getCurrentPosition(), driveBackLeft.getCurrentPosition(), driveBackRight.getCurrentPosition());
             telemetry.update();
         }
