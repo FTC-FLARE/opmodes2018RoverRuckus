@@ -36,10 +36,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name = "Mechanical Meltdown Crater Auto", group = "Kishan")
 //@Disabled
 public class MM_Crater_Auto extends LinearOpMode {
-    private ElapsedTime runtime = new ElapsedTime();
+    private MM_Tote_Bot robot = new MM_Tote_Bot(this);
 
-    MM_Tote_Bot robot = new MM_Tote_Bot(this);
-    String goldMineralLocation = "";
+    private ElapsedTime runtime = new ElapsedTime();
+    private String goldMineralLocation = "";
     @Override
     public void runOpMode() {
         robot.init();
@@ -57,6 +57,7 @@ public class MM_Crater_Auto extends LinearOpMode {
 //        goldMineralLocation = robot.tensorflow.detectGoldMineral();
         telemetry.addData("gold", goldMineralLocation);
         telemetry.update();
+        sleep(2000);
 //        robot.alignWithMinerals();
 //        robot.pushMineralCrater(goldMineralLocation);
     }

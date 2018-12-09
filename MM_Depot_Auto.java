@@ -56,7 +56,7 @@ public class MM_Depot_Auto extends LinearOpMode {
         robot.drivetrain.gyroTurn(.4, 0);
         robot.drivetrain.backward(1, 5, 5);
         robot.drivetrain.strafeLeft(1, .5, 2);
-        goldMineralLocation = robot.tensorflow.detectGoldMineral();
+//        goldMineralLocation = robot.tensorflow.detectGoldMineral();
         robot.drivetrain.strafeRight(1, 5, 5);
         robot.drivetrain.forward(1, 7, 5);
         robot.drivetrain.gyroTurn(.6, -90);

@@ -62,11 +62,19 @@ public class K_TeleOp extends LinearOpMode {
         double drive = -gamepad1.left_stick_y;
         double turn = gamepad1.right_stick_x;
         double strafe = gamepad1.left_stick_x;
+        boolean sprint = gamepad1.left_stick_button;
 
         frontLeftPower = Range.clip(drive + strafe + turn, -1.0, 1.0);
         frontRightPower = Range.clip(drive - strafe - turn, -1.0, 1.0);
         backLeftPower = Range.clip(drive - strafe + turn, -1.0, 1.0);
         backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
+
+        if (!sprint) {
+            frontLeftPower /= 2;
+            frontRightPower /= 2;
+            backLeftPower /= 2;
+            backRightPower /= 2;
+        }
 
         frontLeftMotor.setPower(frontLeftPower);
         frontRightMotor.setPower(frontRightPower);

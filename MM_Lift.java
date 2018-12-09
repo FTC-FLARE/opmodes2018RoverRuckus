@@ -33,15 +33,17 @@ public class MM_Lift {
         lift.setPower(0);
     }
     public String deployAndDetect() {
+        tensorflow.activateTfod();
         lift.setPower(1);
         while (lift.getCurrentPosition() <= LIFT_TOTAL_TICKS && opMode.opModeIsActive()) {
+            opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
+
             if (goldMineralLocation.equals("")) {   // We haven't found gold yet
                 goldMineralLocation = tensorflow.mineForGold();
             }
             else {  // We already found gold
                 opMode.telemetry.addData("Gold detected", goldMineralLocation);
             }
-            opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
             opMode.telemetry.update();
         }
         lift.setPower(0);
