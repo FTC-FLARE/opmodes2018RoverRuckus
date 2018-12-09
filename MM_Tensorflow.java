@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
+import android.support.annotation.NonNull;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -46,7 +48,7 @@ public class MM_Tensorflow {
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 
-    public String detectGoldMineral() {
+    public String detectGoldMineralRightTwo() {
         String goldMineralLocation = "";
         if (tfod != null) {
             tfod.activate();
@@ -61,13 +63,7 @@ public class MM_Tensorflow {
                 if (updatedRecognitions != null) {
                     opMode.telemetry.addData("# Object Detected", updatedRecognitions.size());
                     if (updatedRecognitions.size() == 2) { // if we detected 2 and only 2 minerals
-                        for (Recognition recognition : updatedRecognitions) { //runs through logic for each mineral detected
-                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                goldMineralX = recognition.getLeft();
-                            } else {
-                                silverMineralX = recognition.getLeft();
-                            }
-                        }
+                        determineMineralType(updatedRecognitions);
                         if (getGoldMineralX() == -1) { // Only see two silver minerals
                             goldMineralLocation = "Left";
                         } else { // We see a gold mineral
@@ -80,7 +76,7 @@ public class MM_Tensorflow {
                         opMode.telemetry.addData("GoldX", getGoldMineralX());
                         opMode.telemetry.addData("SilverX", getSilverMineralX());
                     }
-                    opMode.telemetry.addData("Gold Mineral Position",goldMineralLocation);
+                    opMode.telemetry.addData("Gold Mineral Position", goldMineralLocation);
                     opMode.telemetry.update();
                 }
             }
@@ -91,6 +87,90 @@ public class MM_Tensorflow {
         }
         return "Left";
     }
+
+    public String detectGoldMineralLeftTwo() {
+        String goldMineralLocation = "";
+        if (tfod != null) {
+            tfod.activate();
+        }
+
+        runtime.reset();
+
+        if (tfod != null) {
+            // keep checking until we determine where gold is || we go past 5 seconds || we hit stop
+            while (goldMineralLocation == "" && opMode.opModeIsActive() && runtime.seconds() < 5) {
+                goldMineralLocation = mineForGold();
+            }
+            if (goldMineralLocation.equals("")) {
+                return "Left";
+            }
+            return goldMineralLocation;
+        }
+        return "Left";
+    }
+
+    public String detectGoldMineralLeftTwoForDeploy() {
+        String goldMineralLocation = "";
+        if (tfod != null) {
+            tfod.activate();
+        }
+
+        runtime.reset();
+
+        if (tfod != null) {
+            // keep checking until we determine where gold is || we go past 5 seconds || we hit stop
+            if (opMode.opModeIsActive()) {
+                goldMineralLocation = mineForGold();
+            }
+            if (goldMineralLocation.equals("")) {
+                return "Left";
+            }
+            return goldMineralLocation;
+        }
+        return "Left";
+    }
+
+    public String mineForGold() {
+        String goldMineralLocation = "";
+        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+        if (updatedRecognitions != null && updatedRecognitions.size() == 2) {
+            determineMineralType(updatedRecognitions);
+            goldMineralLocation = detectLocationLeftTwo();
+            opMode.telemetry.addData("GoldX", getGoldMineralX());
+            opMode.telemetry.addData("SilverX", getSilverMineralX());
+            opMode.telemetry.addData("Gold Mineral Position", goldMineralLocation);
+            opMode.telemetry.update();
+        }
+        else{
+            opMode.telemetry.addData("We dont have two", updatedRecognitions.size());
+        }
+        return goldMineralLocation;
+    }
+
+    private void determineMineralType(List<Recognition> updatedRecognitions) {
+        for (Recognition recognition : updatedRecognitions) { //runs through logic for each mineral detected
+            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                goldMineralX = recognition.getLeft();
+            } else {
+                silverMineralX = recognition.getLeft();
+            }
+        }
+    }
+
+    private String detectLocationLeftTwo() {
+        String goldMineralLocation;
+        if (getGoldMineralX() == -1) { // Only see two silver minerals
+            goldMineralLocation = "Right";
+        } else { // We see a gold mineral
+            if (getGoldMineralX() > getSilverMineralX()) { // Determine gold mineral location
+                goldMineralLocation = "Center";
+            } else {
+                goldMineralLocation = "Left";
+            }
+        }
+        return goldMineralLocation;
+    }
+
 
     public double getGoldMineralX() {
         return goldMineralX;
