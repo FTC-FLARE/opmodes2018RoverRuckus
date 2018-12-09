@@ -52,16 +52,13 @@ public class MM_Crater_Auto extends LinearOpMode {
 
         waitForStart();
 
-        robot.lift.deploy();
-        robot.moveAwayFromLander();
         goldMineralLocation = robot.lift.deployAndDetect();
+//        robot.moveAwayFromLander();
+//        goldMineralLocation = robot.tensorflow.detectGoldMineral();
         telemetry.addData("gold", goldMineralLocation);
         telemetry.update();
-        robot.alignWithMinerals();
-        robot.pushMineralCrater(goldMineralLocation);
+//        robot.alignWithMinerals();
+//        robot.pushMineralCrater(goldMineralLocation);
     }
 
 }
-
-
-
