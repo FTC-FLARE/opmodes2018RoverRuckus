@@ -20,7 +20,7 @@ public class MM_DriveTrain {
     private DcMotor blMotor = null;
     private DcMotor brMotor = null;
 
-    static final double COUNTS_PER_MOTOR_REV = 1680;    // 60:1
+    static final double COUNTS_PER_MOTOR_REV = 1120;    // 40:1
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
@@ -266,6 +266,21 @@ public class MM_DriveTrain {
         opMode.telemetry.addData("Speed.", "%5.2f:%5.2f", leftSpeed, rightSpeed);
 
         return onTarget;
+    }
+    public void strafeToAngle (double angle, int inches) {
+        double flPower;
+        double frPower;
+        double blPower;
+        double brPower;
+
+        flPower = Math.sin(angle + Math.PI/4);
+        frPower = Math.cos(angle + Math.PI/4);
+        blPower = Math.cos(angle + Math.PI/4);
+        brPower = Math.sin(angle + Math.PI/4);
+
+        setUsingEncoder();
+        setEncoderTargets(inches, inches, inches, inches);
+        setMotorPowers(flPower, frPower, blPower, brPower);
     }
     public void driveWithSticks() {
         double drive = -opMode.gamepad1.left_stick_y;

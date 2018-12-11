@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import java.lang.Math;
 
 public class MM_Tote_Bot
 {
@@ -52,28 +53,25 @@ public class MM_Tote_Bot
     }
     public void moveAwayFromLander() {
         drivetrain.backward(1, 7, 5);
-        drivetrain.gyroTurn(.4, 0);
-        drivetrain.strafeLeft(1, .5, 2);
+        drivetrain.strafeRight(1, 15, 5);
+        drivetrain.gyroTurn(.5, 0);
+//        drivetrain.strafeLeft(1, .5, 2);
     }
     public void alignWithMinerals() {
-        drivetrain.strafeRight(1, 15, 5);
-        drivetrain.forward(1, 10, 5);
+        drivetrain.forward(1, 7, 5);
         drivetrain.gyroTurn(0.7 , -90);
     }
 
     public void pushMineralCrater(String goldMineralLocation){
 
         if (goldMineralLocation.equals("Left")) {
-            drivetrain.strafeLeft(1, 18, 10);
+            drivetrain.strafeToAngle(Math.acos(1.9), 15);
         } else if (goldMineralLocation.equals("Right")) {
-            drivetrain.strafeRight(1, 18, 10);
+            drivetrain.strafeToAngle(Math.acos(1.3), 15);
         }
-            drivetrain.forward(1, 18, 5);
+            drivetrain.strafeToAngle(Math.acos(0.5), 15);
     }
     public void strafeMineralCrater(String goldMineralLocation){
-
-        drivetrain.encoderDrive(.9, 13, -13, -13, 13, 20);
-        drivetrain.encoderDrive(.9, 6, 6, 6, 6, 20);
 
         if (goldMineralLocation.equals("Left")) {
             drivetrain.encoderDrive(.9, 18, 18, 18, 18, 20); // drive forward
@@ -85,6 +83,19 @@ public class MM_Tote_Bot
             opMode.telemetry.addData("Location", goldMineralLocation);
             drivetrain.strafeRightUntilCrater();
         }
+
+    }
+    public void driveAndStrafeMineralLocation(String goldMineralLocation){
+
+        if (goldMineralLocation.equals("Left")) {
+            drivetrain.forward(1, 23, 4);
+        } else if (goldMineralLocation.equals("Right")) {
+            drivetrain.backward(1, 17, 4);
+        } else {
+            drivetrain.forward(1, 9, 2);
+        }
+        drivetrain.strafeRight(1, 18, 4);
+        //drivetrain.strafeLeft(1, 16, 4);
 
     }
 
