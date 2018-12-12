@@ -41,6 +41,12 @@ public class MM_Tote_Bot
 
     private LinearOpMode opMode;
 
+    static final double LEFT_MINERAL_INCHES = 23;
+    static final double RIGHT_MINERAL_INCHES = 12;
+    static final double CENTER_MINERAL_INCHES = 6.5;
+    static final double PUSH_MINERAL_INCHES = 18;
+    static final double DRIVE_TO_DEPOT_COMPENSATE = 14.75;
+
     public MM_Tote_Bot(LinearOpMode opMode){
         this.opMode = opMode;
     }
@@ -85,18 +91,33 @@ public class MM_Tote_Bot
         }
 
     }
-    public void driveAndStrafeMineralLocation(String goldMineralLocation){
-
+    public void driveAndStrafeMineralLocationAndDepot(String goldMineralLocation){
+        // Pushing Mineral Off Crater
         if (goldMineralLocation.equals("Left")) {
-            drivetrain.forward(1, 23, 4);
+            drivetrain.forward(1, LEFT_MINERAL_INCHES, 4);
         } else if (goldMineralLocation.equals("Right")) {
-            drivetrain.backward(1, 17, 4);
+            drivetrain.backward(1, RIGHT_MINERAL_INCHES, 4);
         } else {
-            drivetrain.forward(1, 9, 2);
+            drivetrain.forward(1, CENTER_MINERAL_INCHES, 2);
         }
-        drivetrain.strafeRight(1, 18, 4);
-        //drivetrain.strafeLeft(1, 16, 4);
+        drivetrain.strafeRight(1, PUSH_MINERAL_INCHES, 4);
+        drivetrain.strafeLeft(1, 13, 4);
+        drivetrain.gyroTurn(1,0);
 
+        // Driving to Depot
+        if (goldMineralLocation.equals("Left")) {
+            drivetrain.forward(1, 48 - DRIVE_TO_DEPOT_COMPENSATE, 10);
+        } else if (goldMineralLocation.equals("Right")) {
+            drivetrain.forward(1, 48 + DRIVE_TO_DEPOT_COMPENSATE, 10);
+        } else {
+            drivetrain.forward(1, 48, 7);
+        }
+        driveToDepot();
+    }
+
+    private void driveToDepot() {
+        drivetrain.gyroTurn(1, 43);
+        drivetrain.forward(1, 39, 10);
     }
 
     public void pushMineralDepot(String goldMineralLocation){

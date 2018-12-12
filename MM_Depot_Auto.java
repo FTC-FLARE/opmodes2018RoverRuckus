@@ -36,10 +36,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name = "Mechanical Meltdown Depot Auto", group = "Kishan")
 //@Disabled
 public class MM_Depot_Auto extends LinearOpMode {
+    private MM_Tote_Bot robot = new MM_Tote_Bot(this);
+
     private ElapsedTime runtime = new ElapsedTime();
     private String goldMineralLocation = "";
-
-    MM_Tote_Bot robot = new MM_Tote_Bot(this);
     @Override
     public void runOpMode() {
         robot.init();
@@ -52,14 +52,9 @@ public class MM_Depot_Auto extends LinearOpMode {
 
         waitForStart();
 
-        robot.lift.deploy();
-        robot.drivetrain.gyroTurn(.4, 0);
-        robot.drivetrain.backward(1, 5, 5);
-        robot.drivetrain.strafeLeft(1, .5, 2);
-//        goldMineralLocation = robot.tensorflow.detectGoldMineral();
-        robot.drivetrain.strafeRight(1, 5, 5);
-        robot.drivetrain.forward(1, 7, 5);
-        robot.drivetrain.gyroTurn(.6, -90);
-        robot.pushMineralCrater(goldMineralLocation);
+        goldMineralLocation = robot.lift.deployAndDetect();
+        robot.moveAwayFromLander();
+        robot.driveAndStrafeMineralLocationAndDepot(goldMineralLocation);
     }
+
 }

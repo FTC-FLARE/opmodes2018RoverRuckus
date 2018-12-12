@@ -17,4 +17,8 @@ public class MM_Collector {
         collector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
+    public void setCollector(double speed) {
+        collector.setPower(speed);
+        while(opMode.opModeIsActive() && collector.isBusy());
+    }
 }
