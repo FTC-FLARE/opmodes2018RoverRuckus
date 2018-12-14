@@ -279,9 +279,10 @@ public class MM_DriveTrain {
         brPower = Math.sin(angle + Math.PI/4);
 
         setUsingEncoder();
+        setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
         setEncoderTargets(inches, inches, inches, inches);
         setMotorPowers(flPower, frPower, blPower, brPower);
-        while ((frMotor.isBusy() && flMotor.isBusy() && blMotor.isBusy() && brMotor.isBusy()) && opMode.opModeIsActive());
+        while ((frMotor.isBusy() || flMotor.isBusy() || blMotor.isBusy() || brMotor.isBusy()) && opMode.opModeIsActive());
     }
     public void driveWithSticks() {
         double drive = -opMode.gamepad1.left_stick_y;

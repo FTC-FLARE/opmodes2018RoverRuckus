@@ -8,6 +8,7 @@ public class MM_Arm {
     private DcMotor slide = null;
     private DcMotor elbow = null;
     private LinearOpMode opMode;
+    static final int ARM_POSITION = 2000;
 
     public MM_Arm(LinearOpMode opMode){
         this.opMode = opMode;
@@ -20,5 +21,11 @@ public class MM_Arm {
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         elbow.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+    }
+    public void slideToPosition(double speed, int position ) {
+        slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        slide.setTargetPosition(ARM_POSITION);
+        slide.setPower(speed);
+        while (opMode.opModeIsActive() && slide.isBusy());
     }
 }

@@ -20,6 +20,10 @@ public class K_TeleOp extends LinearOpMode {
     private DcMotor collectorMotor = null;
     private DcMotor elbowMotor = null;
     private DcMotor sliderMotor = null;
+
+    DigitalChannel liftMagnetBottom;
+    DigitalChannel liftMagnetTop;
+
     private DcMotor liftMotor = null;
 
     static final int SLIDE_INCREMENT = 100;
@@ -62,14 +66,14 @@ public class K_TeleOp extends LinearOpMode {
         double drive = -gamepad1.left_stick_y;
         double turn = gamepad1.right_stick_x;
         double strafe = gamepad1.left_stick_x;
-        boolean sprint = gamepad1.left_stick_button;
+        boolean slow = gamepad1.a;
 
         frontLeftPower = Range.clip(drive + strafe + turn, -1.0, 1.0);
         frontRightPower = Range.clip(drive - strafe - turn, -1.0, 1.0);
         backLeftPower = Range.clip(drive - strafe + turn, -1.0, 1.0);
         backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
 
-        if (!sprint) {
+        if (slow) {
             frontLeftPower /= 2;
             frontRightPower /= 2;
             backLeftPower /= 2;
@@ -146,16 +150,18 @@ public class K_TeleOp extends LinearOpMode {
         boolean liftUp = gamepad2.right_bumper;
         boolean liftDown = gamepad2.left_bumper;
 
-        if (liftUp && (liftMotor.getCurrentPosition() <= 0)) {
-            liftMotor.setPower(.5);
+        if (liftUp && !isTriggered(liftMagnetTop)) {
+            liftMotor.setPower(1);
             telemetry.addData("Raise lift", liftMotor.getCurrentPosition());
-        } else if (liftDown && liftMotor.getCurrentPosition() >=  -30000) {
-            liftMotor.setPower(-.5);
+        } else if (liftDown && !isTriggered(liftMagnetBottom)) {
+            liftMotor.setPower(-1);
             telemetry.addData("Lower lift", liftMotor.getCurrentPosition());
         } else {
             liftMotor.setPower(0);
             telemetry.addData("Stop lift", liftMotor.getCurrentPosition());
         }
+        telemetry.addData("Magnet Bottom",!liftMagnetBottom.getState());
+        telemetry.addData("Magnet Top", !liftMagnetTop.getState());
     }
 
     public boolean isTriggered (DigitalChannel Sensor) {
@@ -216,6 +222,18 @@ public class K_TeleOp extends LinearOpMode {
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor.setTargetPosition(0);
 
+        liftMotor = hardwareMap.get(DcMotor.class, "lift");
+        liftMotor.setDirection(DcMotor.Direction.FORWARD);
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor.setTargetPosition(0);
+
+        liftMagnetBottom = hardwareMap.get(DigitalChannel.class, "liftMagnetBottom");
+        liftMagnetBottom.setMode(DigitalChannel.Mode.INPUT);
+        liftMagnetTop = hardwareMap.get(DigitalChannel.class, "liftMagnetTop");
+        liftMagnetTop.setMode(DigitalChannel.Mode.INPUT);
     }
+
 
 }

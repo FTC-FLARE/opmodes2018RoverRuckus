@@ -54,7 +54,8 @@ public class MM_Depot_Auto extends LinearOpMode {
 
         goldMineralLocation = robot.lift.deployAndDetect();
         robot.moveAwayFromLander();
-        robot.driveAndStrafeMineralLocationAndDepot(goldMineralLocation);
+        robot.driveAndStrafeMineralLocationForDepot(goldMineralLocation);
+        robot.deployTeamMarker(1);
     }
 
 }
