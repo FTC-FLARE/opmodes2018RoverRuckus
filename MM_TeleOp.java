@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name = "MMTeleOp", group = "Ian Hunter")
+@Disabled
 
 public class MM_TeleOp extends LinearOpMode {
     private MM_Tote_Bot robot = new MM_Tote_Bot(this);

@@ -33,7 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name = "Mechanical Meltdown Mineral All Four", group = "Kishan")
+@Autonomous(name = "Mineral All Four", group = "MM")
 //@Disabled
 public class MM_Mineral_All_Four extends LinearOpMode {
     private MM_Tote_Bot robot = new MM_Tote_Bot(this);
