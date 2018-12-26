@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
@@ -15,62 +14,36 @@ public class MM_Tensorflow {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-    private static final String VUFORIA_KEY = "AZ5woGn/////AAABmSDumo9pA0BDovmvaV5gG7wLT6ES1QrKcI14JsHiEtQ7Gb6e+KM8ILBQGt8hjfHFNwKixlUDQ6vuz0AdKiYelGz5KcfJ9UV4xCMuDxDGvzOqYIS46QLHeFtsx4c4EP5o5a+H4ZM4crit1cva6avYORJXAH4EYCNluvawI+qm7qOru223kxOmNw83qfl17h9ASLtxxZuZ6OiAnQEq0OsSJf5n43QzVRFI55ZYdVAq+7bSeBEMptf1ZbrzvAZWnq8diTq+ojaADlkeZloub6tSLn4OqqbVtnjk65dNVejK2nTY1y7j7v0BQAkqc0w6oMkg30ynxOoyGid1xjSDDEaS1DvbVjQO0ODZZ4O9v6C30dtQ";
-    private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
     private LinearOpMode opMode;
-    private ElapsedTime runtime = new ElapsedTime();
 
     private double goldMineralX = -1;
     private double silverMineralX = -1;
 
-    public MM_Tensorflow(LinearOpMode opMode) {
+    public MM_Tensorflow(LinearOpMode opMode, VuforiaLocalizer vuforia) {
         this.opMode = opMode;
-        initVuforia();
-        initTfod();
+        initTfod(vuforia);
     }
 
-    public void initVuforia() {
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-    }
-
-    public void initTfod() {
+    public void initTfod(VuforiaLocalizer vuforia) {
         int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+//        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
-    }
-
-    public String detectGoldMineral() {
-        String goldMineralLocation = "";
-        activateTfod();
-
-        runtime.reset();
-
-        if (tfod != null) {
-            // keep checking until we determine where gold is || we go past 5 seconds || we hit stop
-            while (goldMineralLocation.equals("") && opMode.opModeIsActive() && runtime.seconds() < 5) {
-                goldMineralLocation = mineForGold();
-                opMode.telemetry.update();
-            }
-            if (goldMineralLocation.equals("")) {
-                return "Left";
-            }
-            return goldMineralLocation;
-        }
-        return "Left";
     }
 
     public void activateTfod() {
         if (tfod != null) {
             tfod.activate();
+        }
+    }
+
+    public void shutdownTfod() {
+        if (tfod != null) {
+            tfod.shutdown();
         }
     }
 
@@ -97,6 +70,8 @@ public class MM_Tensorflow {
                 silverMineralX = recognition.getLeft();
             }
         }
+
+        // We are looking at the left 2 minerals
         if (getGoldMineralX() == -1) { // Only see two silver minerals
             goldMineralLocation = "Right";
         } else { // We see a gold mineral

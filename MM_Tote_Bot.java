@@ -37,6 +37,7 @@ public class MM_Tote_Bot
     public MM_DriveTrain drivetrain = null;
     public MM_Arm arm = null;
     public MM_Collector collector = null;
+    public MM_VuforiaNav vuforiaNav = null;
     public MM_Lift lift = null;
 
     private LinearOpMode opMode;
@@ -55,7 +56,8 @@ public class MM_Tote_Bot
         drivetrain = new MM_DriveTrain(opMode);
         arm = new MM_Arm(opMode);
         collector = new MM_Collector(opMode);
-        lift = new MM_Lift(opMode);
+        vuforiaNav = new MM_VuforiaNav(opMode);
+        lift = new MM_Lift(opMode, vuforiaNav.getVuforia());
     }
     public void moveAwayFromLander() {
         drivetrain.backward(1, 7, 5);

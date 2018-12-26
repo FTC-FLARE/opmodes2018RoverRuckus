@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+
 public class MM_Lift {
     private DcMotor lift = null;
     private MM_Tensorflow tensorflow = null;
@@ -16,7 +18,7 @@ public class MM_Lift {
     private LinearOpMode opMode;
     private String goldMineralLocation = "";
 
-    public MM_Lift(LinearOpMode opMode){
+    public MM_Lift(LinearOpMode opMode, VuforiaLocalizer vuforia){
         this.opMode = opMode;
         lift = opMode.hardwareMap.get(DcMotor.class, "lift");
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -29,7 +31,7 @@ public class MM_Lift {
         liftMagnetTop = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnetTop");
         liftMagnetTop.setMode(DigitalChannel.Mode.INPUT);
 
-        tensorflow = new MM_Tensorflow(opMode);
+        tensorflow = new MM_Tensorflow(opMode, vuforia);
     }
     public String deployAndDetect() {
         tensorflow.activateTfod();
@@ -50,6 +52,7 @@ public class MM_Lift {
         if (goldMineralLocation.equals("")) {  // We didn't find gold, so use default location
             goldMineralLocation = "Center";
         }
+        tensorflow.shutdownTfod();
         return goldMineralLocation;
     }
     public boolean isTriggered (DigitalChannel Sensor) {
