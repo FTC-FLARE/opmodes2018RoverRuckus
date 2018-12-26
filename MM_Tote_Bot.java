@@ -41,10 +41,10 @@ public class MM_Tote_Bot
 
     private LinearOpMode opMode;
 
-    static final double LEFT_MINERAL_INCHES = 22;
-    static final double RIGHT_MINERAL_INCHES = 10;
-    static final double CENTER_MINERAL_INCHES = 6.5;
-    static final double PUSH_MINERAL_INCHES = 18;
+    static final double LEFT_MINERAL_INCHES = 23.5;
+    static final double RIGHT_MINERAL_INCHES = 12;
+    static final double CENTER_MINERAL_INCHES = 5.6;
+    static final double PUSH_MINERAL_INCHES = 22;
     static final double DRIVE_TO_DEPOT_COMPENSATE = 14.75;
 
     public MM_Tote_Bot(LinearOpMode opMode){
@@ -101,9 +101,23 @@ public class MM_Tote_Bot
             drivetrain.forward(1, CENTER_MINERAL_INCHES, 2);
         }
         drivetrain.strafeRight(1, PUSH_MINERAL_INCHES, 4);
-        drivetrain.strafeLeft(1, 13, 4);
-        drivetrain.gyroTurn(0.6,0);
+        drivetrain.gyroTurn(.5, -12);
     }
+    public void onlyMineralAllFour(String goldMineralLocation){
+        // Pushing Mineral Off Crater
+        if (goldMineralLocation.equals("Left")) {
+            drivetrain.forward(1, LEFT_MINERAL_INCHES, 4);
+        } else if (goldMineralLocation.equals("Right")) {
+            drivetrain.backward(1, RIGHT_MINERAL_INCHES, 4);
+        } else {
+            drivetrain.forward(1, CENTER_MINERAL_INCHES, 2);
+        }
+        drivetrain.strafeRight(1, PUSH_MINERAL_INCHES, 4);
+        //drivetrain.gyroTurn(.5, -10);
+        //drivetrain.strafeLeft(1, 13, 4);
+        //drivetrain.gyroTurn(0.6,0);
+    }
+
 
     public void driveAndDumpTeamMarker(String goldMineralLocation) {
         // Driving to Depot
@@ -127,14 +141,14 @@ public class MM_Tote_Bot
         } else {
             drivetrain.forward(1, CENTER_MINERAL_INCHES, 2);
         }
-        drivetrain.strafeRight(1, PUSH_MINERAL_INCHES, 4);
-        drivetrain.gyroTurn(0.6,0);
+        drivetrain.gyroTurn(.6, -90);
+        drivetrain.forward(1, PUSH_MINERAL_INCHES, 6);
 
         // Driving to Depot
         if (goldMineralLocation.equals("Left")) {
-            drivetrain.gyroTurn(.6, -150);
+            drivetrain.gyroTurn(.6, -110);
         } else if(goldMineralLocation.equals("Right")) {
-            drivetrain.gyroTurn(.6, -50);
+            drivetrain.gyroTurn(.6, -70);
         }
         drivetrain.forward(1, 23, 7);
     }
