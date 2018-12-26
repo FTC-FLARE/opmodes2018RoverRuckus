@@ -34,6 +34,8 @@ public class K_TeleOp extends LinearOpMode {
     static final int LIFT_HEIGHT = 1000;
 
     int lastSlideTarget = 0;
+    private boolean driveSlow = true;
+    private boolean isButtonAHandled = false;
 
     @Override
     public void runOpMode() {
@@ -66,14 +68,20 @@ public class K_TeleOp extends LinearOpMode {
         double drive = -gamepad1.left_stick_y;
         double turn = gamepad1.right_stick_x;
         double strafe = gamepad1.left_stick_x;
-        boolean slow = gamepad1.a;
 
         frontLeftPower = Range.clip(drive + strafe + turn, -1.0, 1.0);
         frontRightPower = Range.clip(drive - strafe - turn, -1.0, 1.0);
         backLeftPower = Range.clip(drive - strafe + turn, -1.0, 1.0);
         backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
 
-        if (slow) {
+        if (gamepad1.a && !isButtonAHandled) {
+            driveSlow = !driveSlow;
+            isButtonAHandled = true;
+        } else if (!gamepad1.a) {
+            isButtonAHandled = false;
+        }
+
+        if (driveSlow) {
             frontLeftPower /= 2;
             frontRightPower /= 2;
             backLeftPower /= 2;
@@ -85,7 +93,6 @@ public class K_TeleOp extends LinearOpMode {
         backLeftMotor.setPower(backLeftPower);
         backRightMotor.setPower(backRightPower);
     }
-
     private void collectorControl() {
         double collectorPower;
 
