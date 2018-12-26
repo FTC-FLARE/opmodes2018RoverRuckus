@@ -3,10 +3,13 @@ package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 public class MM_Lift {
     private DcMotor lift = null;
-    public MM_Tensorflow tensorflow = null;
+    private MM_Tensorflow tensorflow = null;
+    private DigitalChannel liftMagnetBottom;
+    private DigitalChannel liftMagnetTop;
 
     public static final int LIFT_TOTAL_TICKS = 20900;
 
@@ -21,21 +24,18 @@ public class MM_Lift {
         lift.setDirection(DcMotor.Direction.FORWARD);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        tensorflow = new MM_Tensorflow(opMode);
-    }
-    public void deploy() {
+        liftMagnetBottom = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnetBottom");
+        liftMagnetBottom.setMode(DigitalChannel.Mode.INPUT);
+        liftMagnetTop = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnetTop");
+        liftMagnetTop.setMode(DigitalChannel.Mode.INPUT);
 
-        lift.setPower(1);
-        while (lift.getCurrentPosition() <= LIFT_TOTAL_TICKS && opMode.opModeIsActive()) {
-            opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
-            opMode.telemetry.update();
-        }
-        lift.setPower(0);
+        tensorflow = new MM_Tensorflow(opMode);
     }
     public String deployAndDetect() {
         tensorflow.activateTfod();
         lift.setPower(1);
-        while (lift.getCurrentPosition() <= LIFT_TOTAL_TICKS && opMode.opModeIsActive()) {
+          while (opMode.opModeIsActive() && (!isTriggered(liftMagnetTop) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
+
             opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
 
             if (goldMineralLocation.equals("")) {   // We haven't found gold yet
@@ -52,5 +52,7 @@ public class MM_Lift {
         }
         return goldMineralLocation;
     }
-
+    public boolean isTriggered (DigitalChannel Sensor) {
+        return !Sensor.getState();
+    }
 }
