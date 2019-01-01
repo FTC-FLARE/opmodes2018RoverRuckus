@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -8,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "K_TeleOp_Manual", group = "Kathy")
-//@Disabled
+@Disabled
 public class K_TeleOp_Manual extends LinearOpMode {
 
     private DcMotor driveFrontLeft = null;
@@ -45,6 +46,7 @@ public class K_TeleOp_Manual extends LinearOpMode {
         armFlipper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         slide = hardwareMap.get(DcMotor.class, "slide");
+        slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -79,9 +81,9 @@ public class K_TeleOp_Manual extends LinearOpMode {
                 lift.setPower(0);
 
             // control arm flipper
-            armFlipper.setPower(-gamepad2.right_stick_y * .50);
+            armFlipper.setPower(-gamepad2.right_stick_y);
 
-            slide.setPower(-gamepad2.left_stick_y * .50);
+            slide.setPower(-gamepad2.left_stick_y);
 
         // ***** drivetrain control
             double drive = -gamepad1.left_stick_y;
@@ -112,6 +114,7 @@ public class K_TeleOp_Manual extends LinearOpMode {
 
             telemetry.addData("Arm Flipper Power", armFlipper.getPower());
             telemetry.addData("Slide Power", slide.getPower());
+            telemetry.addData("      Pos", slide.getCurrentPosition());
             telemetry.addData("Lift", lift.getCurrentPosition());
             telemetry.addData("Drivetrain", " %7d :%7d : %7d : %7d", driveFrontLeft.getCurrentPosition(), driveFrontRight.getCurrentPosition(), driveBackLeft.getCurrentPosition(), driveBackRight.getCurrentPosition());
             telemetry.update();
