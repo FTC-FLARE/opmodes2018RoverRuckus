@@ -26,7 +26,7 @@ public class K_TeleOp extends LinearOpMode {
 
     private DcMotor liftMotor = null;
 
-    static final int SLIDE_INCREMENT = 100;
+    static final int SLIDE_INCREMENT = 250;
     static final int ELBOW_INCREMENT = 300;
     static final double COUNTS_PER_MOTOR_REV = (560 * 3);
     static final double ELBOW_GEAR_RATIO = 26/1;
@@ -133,7 +133,7 @@ public class K_TeleOp extends LinearOpMode {
     }
     private void slideControl() {
         int slideTarget;
-        double slideStickValue = -gamepad2.left_stick_y;
+        double slideStickValue = (gamepad2.left_stick_y == 0 ? 0 : (gamepad2.left_stick_y < 0 ? 1 : -1)) ;
 
         if (!isTriggered(touchSensor) && (slideStickValue < 0) || !isTriggered(magneticSensor) && (slideStickValue > 0)) {
             slideTarget = sliderMotor.getCurrentPosition() + (int)(slideStickValue * SLIDE_INCREMENT);
