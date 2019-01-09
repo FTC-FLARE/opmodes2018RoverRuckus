@@ -1,35 +1,9 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import java.lang.Math;
 
 public class MM_Tote_Bot
@@ -40,13 +14,18 @@ public class MM_Tote_Bot
     public MM_VuforiaNav vuforiaNav = null;
     public MM_Lift lift = null;
 
+    private Servo phoneTilt;
+
     private LinearOpMode opMode;
+    private ElapsedTime runtime = new ElapsedTime();
 
     static final double LEFT_MINERAL_INCHES = 23.5;
     static final double RIGHT_MINERAL_INCHES = 12;
     static final double CENTER_MINERAL_INCHES = 5.6;
     static final double PUSH_MINERAL_INCHES = 22;
     static final double DRIVE_TO_DEPOT_COMPENSATE = 14.75;
+    static final double PHONE_DOWN = .7125;
+    static final double PHONE_UP = .85;
 
     public MM_Tote_Bot(LinearOpMode opMode){
         this.opMode = opMode;
@@ -56,15 +35,27 @@ public class MM_Tote_Bot
         drivetrain = new MM_DriveTrain(opMode);
         arm = new MM_Arm(opMode);
         collector = new MM_Collector(opMode);
-        vuforiaNav = new MM_VuforiaNav(opMode);
+        vuforiaNav = new MM_VuforiaNav(opMode, drivetrain);
         lift = new MM_Lift(opMode, vuforiaNav.getVuforia());
+        phoneTilt = opMode.hardwareMap.get(Servo.class, "phoneTilt");
+        movePhoneDown();
     }
+
     public void moveAwayFromLander() {
         drivetrain.backward(1, 7, 5);
         drivetrain.strafeRight(1, 15, 5);
         drivetrain.gyroTurn(.5, 0);
 //        drivetrain.strafeLeft(1, .5, 2);
     }
+
+    public void movePhoneUp () {
+        phoneTilt.setPosition(PHONE_UP);
+    }
+
+    public void movePhoneDown () {
+        phoneTilt.setPosition(PHONE_DOWN);
+    }
+
     public void alignWithMinerals() {
         drivetrain.forward(1, 7, 5);
         drivetrain.gyroTurn(0.7 , -90);
@@ -79,6 +70,7 @@ public class MM_Tote_Bot
         }
             drivetrain.strafeToAngle(Math.acos(0.5), 15);
     }
+
     public void strafeMineralCrater(String goldMineralLocation){
 
         if (goldMineralLocation.equals("Left")) {
@@ -93,6 +85,7 @@ public class MM_Tote_Bot
         }
 
     }
+
     public void driveAndStrafeMineralLocationForCrater(String goldMineralLocation){
         // Pushing Mineral Off Crater
         if (goldMineralLocation.equals("Left")) {
@@ -105,6 +98,7 @@ public class MM_Tote_Bot
         drivetrain.strafeRight(1, PUSH_MINERAL_INCHES, 4);
         drivetrain.gyroTurn(.5, -12);
     }
+
     public void onlyMineralAllFour(String goldMineralLocation){
         // Pushing Mineral Off Crater
         if (goldMineralLocation.equals("Left")) {
@@ -119,7 +113,6 @@ public class MM_Tote_Bot
         //drivetrain.strafeLeft(1, 13, 4);
         //drivetrain.gyroTurn(0.6,0);
     }
-
 
     public void driveAndDumpTeamMarker(String goldMineralLocation) {
         // Driving to Depot
@@ -155,7 +148,6 @@ public class MM_Tote_Bot
         drivetrain.forward(1, 23, 7);
     }
 
-
     private void driveToDepot() {
         drivetrain.gyroTurn(0.6, 43);
         drivetrain.forward(1, 39, 10);
@@ -166,7 +158,6 @@ public class MM_Tote_Bot
     }
 
     public void pushMineralDepot(String goldMineralLocation){
-
         drivetrain.encoderDrive(.7, 16, 16, 16, 16, 20);
 
         if (goldMineralLocation.equals("Left")) {
@@ -179,9 +170,49 @@ public class MM_Tote_Bot
             opMode.telemetry.addData("Location", goldMineralLocation);
             drivetrain.driveUntilDepot();
         }
-
     }
 
+    public boolean moveToLocation (double goalX, double goalY, double goalBearing, double tolerance, double timeOutS){
+        boolean closeEnough = false;
 
+        runtime.reset();
+        while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
+            if (vuforiaNav.targetsAreVisible() >= 0) {
+                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, tolerance); // sets robot goals and determines the error
+            } else {
+                vuforiaNav.findTarget();
+            }
+
+            vuforiaNav.navTelemetry();
+            drivetrain.moveRobot();
+
+            opMode.telemetry.update();
+        }
+        if (closeEnough) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean moveToLocation (double goalX, double goalY, double goalBearing, double gainAxial, double gainLateral, double gainYaw, double tolerance, double timeOutS){
+        boolean closeEnough = false;
+
+        runtime.reset();
+        while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
+            if (vuforiaNav.targetsAreVisible() >= 0) {
+                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, gainAxial, gainLateral, gainYaw, tolerance); // sets robot goals and determines the error
+            } else {
+                vuforiaNav.findTarget();
+            }
+
+            vuforiaNav.navTelemetry();
+            drivetrain.moveRobot();
+
+            opMode.telemetry.update();
+        }
+        if (closeEnough) {
+            return true;
+        }
+        return false;
+    }
 }
-

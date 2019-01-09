@@ -32,6 +32,10 @@ public class MM_DriveTrain {
     private LinearOpMode opMode;
     private Orientation angles;
 
+    private double  driveAxial      = 0 ;   // Positive is forward
+    private double  driveLateral    = 0 ;   // Positive is right
+    private double  driveYaw        = 0 ;   // Positive is CCW
+
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
 
@@ -300,5 +304,52 @@ public class MM_DriveTrain {
         brMotor.setPower(backRightPower);
 
         opMode.telemetry.addData("","flPower %.2f - frPower %.2f - blPower %.2f - brPower %.2f", frontLeftPower, frontRightPower, backLeftPower, backRightPower);
+    }
+
+    public void
+
+    moveRobot() {
+        double flPower = driveAxial + driveLateral + driveYaw;
+        double frPower = driveAxial - driveLateral - driveYaw;
+        double blPower = driveAxial - driveLateral + driveYaw;
+        double brPower = driveAxial + driveLateral - driveYaw;
+
+        double max = Math.max(Math.abs(flPower), Math.abs(frPower));
+        max = Math.max(max, Math.abs(blPower));
+        max = Math.max(max, Math.abs(brPower));
+        if (max > 1.0)
+        {
+            flPower /= max;
+            frPower /= max;
+            blPower /= max;
+            brPower /= max;
+        }
+
+        flMotor.setPower(flPower);
+        frMotor.setPower(frPower);
+        blMotor.setPower(blPower);
+        brMotor.setPower(brPower);
+
+        opMode.telemetry.addData("Axes  ", "A[%+5.2f], L[%+5.2f], Y[%+5.2f]", driveAxial, driveLateral, driveYaw);
+        opMode.telemetry.addData("Wheels", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
+    }
+
+    public void manualDrive()  {
+        setAxial(-opMode.gamepad1.left_stick_y);
+        setLateral(opMode.gamepad1.left_stick_x);
+        setYaw(opMode.gamepad1.right_stick_x);
+    }
+
+    public void setAxial(double axial) {
+//        driveAxial = Range.clip(axial, -1, 1);
+        driveAxial = axial;
+    }
+    public void setLateral(double lateral) {
+//        driveLateral = Range.clip(lateral, -1, 1);
+        driveLateral = lateral;
+    }
+    public void setYaw(double yaw) {
+//        driveYaw = Range.clip(yaw, -1, 1);
+        driveYaw = yaw;
     }
 }

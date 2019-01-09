@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -9,11 +8,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 
 public class MM_Lift {
     private DcMotor lift = null;
-    private MM_Tensorflow tensorflow = null;
+//    private MM_Tensorflow tensorflow = null; //Make this the one we use after we finish testing
+    public MM_Tensorflow tensorflow = null;
     private DigitalChannel liftMagnetBottom;
     private DigitalChannel liftMagnetTop;
 
-    public static final int LIFT_TOTAL_TICKS = 20900;
+    public static final int LIFT_TOTAL_TICKS = 7550;
 
     private LinearOpMode opMode;
     private String goldMineralLocation = "";
@@ -23,7 +23,7 @@ public class MM_Lift {
         lift = opMode.hardwareMap.get(DcMotor.class, "lift");
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lift.setDirection(DcMotor.Direction.FORWARD);
+        lift.setDirection(DcMotor.Direction.REVERSE);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         liftMagnetBottom = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnetBottom");
@@ -33,10 +33,11 @@ public class MM_Lift {
 
         tensorflow = new MM_Tensorflow(opMode, vuforia);
     }
-    public String deployAndDetect() {
+    public String deployAndDetect(MM_Tote_Bot robot) {
         tensorflow.activateTfod();
         lift.setPower(1);
-          while (opMode.opModeIsActive() && (!isTriggered(liftMagnetTop) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
+//          while (opMode.opModeIsActive() ) {
+              while (opMode.opModeIsActive() && (!isTriggered(liftMagnetTop) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
 
             opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
 
@@ -53,8 +54,23 @@ public class MM_Lift {
             goldMineralLocation = "Center";
         }
         tensorflow.shutdownTfod();
+        robot.movePhoneUp();
         return goldMineralLocation;
     }
+
+    public String detect() {
+
+            if (goldMineralLocation.equals("")) {   // We haven't found gold yet
+                goldMineralLocation = tensorflow.mineForGold();
+            }
+            else {  // We already found gold
+                opMode.telemetry.addData("Gold detected", goldMineralLocation);
+            }
+            opMode.telemetry.update();
+
+        return goldMineralLocation;
+    }
+
     public boolean isTriggered (DigitalChannel Sensor) {
         return !Sensor.getState();
     }
