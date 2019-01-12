@@ -36,6 +36,8 @@ public class MM_Lift {
     public String deployAndDetect(MM_Tote_Bot robot) {
         tensorflow.activateTfod();
         lift.setPower(1);
+        robot.movePhoneDown();
+
 //          while (opMode.opModeIsActive() ) {
               while (opMode.opModeIsActive() && (!isTriggered(liftMagnetTop) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
 

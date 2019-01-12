@@ -36,6 +36,28 @@ public class MM_DriveTrain {
     private double  driveLateral    = 0 ;   // Positive is right
     private double  driveYaw        = 0 ;   // Positive is CCW
 
+    private double frontLeftPowerForVuforia = 0;
+
+    public void setFrontLeftPowerForVuforia(double frontLeftPowerForVuforia) {
+        this.frontLeftPowerForVuforia = frontLeftPowerForVuforia;
+    }
+
+    public void setFrontRightPowerForVuforia(double frontRightPowerForVuforia) {
+        this.frontRightPowerForVuforia = frontRightPowerForVuforia;
+    }
+
+    public void setBackLeftPowerForVuforia(double backLeftPowerForVuforia) {
+        this.backLeftPowerForVuforia = backLeftPowerForVuforia;
+    }
+
+    public void setBackRightPowerForVuforia(double backRightPowerForVuforia) {
+        this.backRightPowerForVuforia = backRightPowerForVuforia;
+    }
+
+    private double frontRightPowerForVuforia = 0;
+    private double backLeftPowerForVuforia = 0;
+    private double backRightPowerForVuforia = 0;
+
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
 
@@ -123,7 +145,7 @@ public class MM_DriveTrain {
         blMotor.setTargetPosition(newBackLeftTarget);
         brMotor.setTargetPosition(newBackRightTarget);
     }
-    private void setMotorPowers(double flSpeed, double frSpeed, double blSpeed, double brSpeed) {
+    public void setMotorPowers(double flSpeed, double frSpeed, double blSpeed, double brSpeed) {
         flMotor.setPower(flSpeed);
         frMotor.setPower(frSpeed);
         blMotor.setPower(blSpeed);
@@ -151,6 +173,13 @@ public class MM_DriveTrain {
 
     private void stopAndResetEncoders() {
         setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public void brakesOn() {
+        flMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        blMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        brMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private void setMotorMode(DcMotor.RunMode stopAndResetEncoder) {
@@ -306,9 +335,7 @@ public class MM_DriveTrain {
         opMode.telemetry.addData("","flPower %.2f - frPower %.2f - blPower %.2f - brPower %.2f", frontLeftPower, frontRightPower, backLeftPower, backRightPower);
     }
 
-    public void
-
-    moveRobot() {
+    public void moveRobot() {
         double flPower = driveAxial + driveLateral + driveYaw;
         double frPower = driveAxial - driveLateral - driveYaw;
         double blPower = driveAxial - driveLateral + driveYaw;
@@ -325,13 +352,26 @@ public class MM_DriveTrain {
             brPower /= max;
         }
 
-        flMotor.setPower(flPower);
-        frMotor.setPower(frPower);
-        blMotor.setPower(blPower);
-        brMotor.setPower(brPower);
+        flMotor.setPower(flPower * 0.75);
+        frMotor.setPower(frPower * 0.75);
+        blMotor.setPower(blPower * 0.75);
+        brMotor.setPower(brPower * 0.75);
 
         opMode.telemetry.addData("Axes  ", "A[%+5.2f], L[%+5.2f], Y[%+5.2f]", driveAxial, driveLateral, driveYaw);
         opMode.telemetry.addData("Wheels", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
+    }
+
+    public void moveRobotForTrig() {
+        flMotor.setPower(frontLeftPowerForVuforia * 0.75);
+        frMotor.setPower(frontRightPowerForVuforia * 0.75);
+        blMotor.setPower(backLeftPowerForVuforia * 0.75);
+        brMotor.setPower(backRightPowerForVuforia * 0.75);
+
+        opMode.telemetry.addData("Wheels", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", frontLeftPowerForVuforia, frontRightPowerForVuforia, backLeftPowerForVuforia, backRightPowerForVuforia);
+    }
+
+    public double getCurrentHeading() {
+        return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle;
     }
 
     public void manualDrive()  {

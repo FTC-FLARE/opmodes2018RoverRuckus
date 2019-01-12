@@ -38,7 +38,7 @@ public class MM_Tote_Bot
         vuforiaNav = new MM_VuforiaNav(opMode, drivetrain);
         lift = new MM_Lift(opMode, vuforiaNav.getVuforia());
         phoneTilt = opMode.hardwareMap.get(Servo.class, "phoneTilt");
-        movePhoneDown();
+        movePhoneUp();
     }
 
     public void moveAwayFromLander() {
@@ -215,4 +215,79 @@ public class MM_Tote_Bot
         }
         return false;
     }
+
+    public boolean moveToLocation (double goalX, double goalY, double goalBearing, int rotateFactor, double timeOutS){
+        boolean closeEnough = false;
+
+        runtime.reset();
+//        vuforiaNav.targetsAreVisible();
+//        double rotateFactor = vuforiaNav.getRotateFactor(goalX, goalY, goalBearing);
+
+        while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
+            if (vuforiaNav.targetsAreVisible() >= 0) {
+//                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, speed, rotateSpeed); // use trig functions
+                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, rotateFactor); // use trig functions
+            } else {
+                vuforiaNav.findTarget();
+            }
+
+            vuforiaNav.navTelemetryTrig();
+            drivetrain.moveRobotForTrig();
+
+            opMode.telemetry.update();
+        }
+        if (closeEnough) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean turnClockwiseTillTarget(int timeOutS){
+        boolean foundTarget = false;
+
+        runtime.reset();
+        drivetrain.setMotorPowers(.2, -.2, .2, -.2);
+
+        while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
+            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
+                foundTarget = true;
+                drivetrain.stopMotors();
+            }
+        }
+
+        return foundTarget;
+    }
+
+    public boolean turnCounterClockwiseTillTarget(int timeOutS){
+        boolean foundTarget = false;
+
+        runtime.reset();
+        drivetrain.setMotorPowers(-.2, .2, -.2, .2);
+
+        while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
+            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
+                foundTarget = true;
+                drivetrain.stopMotors();
+            }
+        }
+
+        return foundTarget;
+    }
+
+    public boolean strafeRightTillTarget(int timeOutS){
+        boolean foundTarget = false;
+
+        runtime.reset();
+        drivetrain.setMotorPowers(.18, -.18, -.18, .18);
+
+        while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
+            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
+                foundTarget = true;
+                drivetrain.stopMotors();
+            }
+        }
+
+        return foundTarget;
+    }
+
 }

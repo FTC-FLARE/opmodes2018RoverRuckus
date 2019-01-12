@@ -28,7 +28,6 @@ public class MM_VuforiaNav {
     private static final double X_CLOSE_ENOUGH = 40;      // Within 1.0 cm of target X
     static final double TARGET_DISTANCE = 400.0;    // Hold robot's center 400 mm (16 inches) from target
 
-
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = VuforiaLocalizer.CameraDirection.BACK;
     private static final String VUFORIA_KEY = "AZ5woGn/////AAABmSDumo9pA0BDovmvaV5gG7wLT6ES1QrKcI14JsHiEtQ7Gb6e+KM8ILBQGt8hjfHFNwKixlUDQ6vuz0AdKiYelGz5KcfJ9UV4xCMuDxDGvzOqYIS46QLHeFtsx4c4EP5o5a+H4ZM4crit1cva6avYORJXAH4EYCNluvawI+qm7qOru223kxOmNw83qfl17h9ASLtxxZuZ6OiAnQEq0OsSJf5n43QzVRFI55ZYdVAq+7bSeBEMptf1ZbrzvAZWnq8diTq+ojaADlkeZloub6tSLn4OqqbVtnjk65dNVejK2nTY1y7j7v0BQAkqc0w6oMkg30ynxOoyGid1xjSDDEaS1DvbVjQO0ODZZ4O9v6C30dtQ";
     private VuforiaLocalizer vuforia;
@@ -39,6 +38,9 @@ public class MM_VuforiaNav {
     private static final float mmPerInch = 25.4f;
     private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
     private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
+
+    static final double DISTANCE_TOLERANCE = 2 * mmPerInch;  // how close is good enough?
+    static final double ANGLE_TOLERANCE = 2;
 
     public static final double YAW_GAIN = 0.018;   // Rate at which we respond to heading error
     public static final double LATERAL_GAIN = 0.0027;  // Rate at which we respond to off-axis error
@@ -247,6 +249,77 @@ public class MM_VuforiaNav {
 
         return (axialWeight == 0 && lateralWeight == 0 && yawWeight == 0);
     }
+    public boolean cruiseControl(double goalX, double goalY, double goalBearing, int rotateFactor) {
+//    public boolean cruiseControl(double goalX, double goalY, double goalBearing, double driveSpeed, double rotateFactor) {
+        this.goalX = goalX * mmPerInch;
+        this.goalY = goalY * mmPerInch;
+        this.goalBearing = goalBearing;
+        errorX = this.goalX - robotX;
+        errorY = this.goalY - robotY;
+
+        goalRange = Math.hypot(errorX, errorY);
+        if (Math.abs(goalRange) < DISTANCE_TOLERANCE) {
+            errorX = 0;
+            errorY = 0;
+        }
+
+        errorBearing  = this.goalBearing - robotBearing;
+        if (errorBearing > 180){
+            errorBearing -= 360;
+        }
+        else if (errorBearing < -180){
+            errorBearing += 360;
+        }
+
+        double rotateAdder = 0;
+        if (Math.abs(errorBearing) < ANGLE_TOLERANCE) {
+            errorBearing = 0;
+        }
+        else {
+            rotateAdder = Math.abs(errorBearing) * rotateFactor;
+        }
+
+//        if (goalRange < (6 * mmPerInch)){   // time to ramp down
+//            driveSpeed = (goalRange - (2 * mmPerInch)) / (6 * mmPerInch);
+//        }
+
+//        double flPower = driveSpeed * Math.sin(Math.toRadians(errorBearing)+ Math.toRadians(90))+ rotateSpeed;
+//        double frPower = driveSpeed * Math.cos(Math.toRadians(errorBearing)+ Math.toRadians(90))- rotateSpeed;
+//        double blPower = driveSpeed * Math.cos(Math.toRadians(errorBearing)+ Math.toRadians(90))+ rotateSpeed;
+//        double brPower = driveSpeed * Math.sin(Math.toRadians(errorBearing)+ Math.toRadians(90))- rotateSpeed;
+
+        double cosA = Math.cos(Math.toRadians(errorBearing - 90));
+        double sinA = Math.sin(Math.toRadians(errorBearing - 90));
+        double x1 = errorX*cosA - errorY*sinA;
+        double y1 = errorX*sinA + errorY*cosA;
+
+        double flPower = x1 + y1 + rotateAdder;
+        double frPower = -x1 + y1 - rotateAdder;
+        double blPower = -x1 + y1 + rotateAdder;
+        double brPower = x1 + y1 - rotateAdder;
+
+        opMode.telemetry.addData("x1: y1 : rotate", "[%+5.2f] : [%+5.2f] : [%+5.2f]", x1, y1, rotateAdder);
+//        opMode.telemetry.addData("Before normal", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
+
+        double max = Math.max(Math.abs(flPower), Math.abs(frPower));
+        max = Math.max(max, Math.abs(blPower));
+        max = Math.max(max, Math.abs(brPower));
+        if (max > 1.0)
+        {
+            flPower /= max;
+            frPower /= max;
+            blPower /= max;
+            brPower /= max;
+        }
+//        opMode.telemetry.addData("After normal", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
+
+        driveTrain.setFrontLeftPowerForVuforia(flPower);
+        driveTrain.setFrontRightPowerForVuforia(frPower);
+        driveTrain.setBackLeftPowerForVuforia(blPower);
+        driveTrain.setBackRightPowerForVuforia(brPower);
+
+        return (Math.abs(errorBearing) < ANGLE_TOLERANCE && Math.abs(goalRange) < DISTANCE_TOLERANCE);
+    }
 
     public void setGoalToCurrent() {
         goalX = robotX;
@@ -274,6 +347,19 @@ public class MM_VuforiaNav {
         }
     }
 
+    public void navTelemetryTrig() {
+        if (targetFound >= 0) {
+            opMode.telemetry.addData("Visible", targetName);
+            opMode.telemetry.addData("Robot", "[X]:[Y] (B) [%5.1fin]:[%5.1fin] (%4.0f°)", robotX / mmPerInch, robotY / mmPerInch, robotBearing);
+//            opMode.telemetry.addData("Target", "[R] (B):(RB) [%5.1fin] (%4.0f°):(%4.0f°)", targetRange / mmPerInch, targetBearing, relativeBearing);
+            opMode.telemetry.addData("Goal", "[X]:[Y]  (GB)  [%5.1fin]:[%5.1fin]  (%4.0f°)", goalX / mmPerInch, goalY / mmPerInch, goalBearing);
+            opMode.telemetry.addData("Error", "[X]:[Y] (B)  [%5.1fin]:[%5.1fin]  (%4.0f°)", errorX / mmPerInch, errorY / mmPerInch, errorBearing);
+            opMode.telemetry.addData("Distance", goalRange / mmPerInch);
+        } else {
+            opMode.telemetry.addData("Visible", "- - - -");
+        }
+    }
+
     public void initVuforia() {
         int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
@@ -288,7 +374,7 @@ public class MM_VuforiaNav {
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(
                         AxesReference.EXTRINSIC, AxesOrder.YZX,
-                        AngleUnit.DEGREES, 90, 90, 0));
+                        AngleUnit.DEGREES, -90, -90, 0));
 
         targetsRoverRuckus = vuforia.loadTrackablesFromAsset("RoverRuckus");
 
@@ -329,6 +415,15 @@ public class MM_VuforiaNav {
         ((VuforiaTrackableDefaultListener) backSpace.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
     }
 
+    public double getRotateFactor(double goalX, double goalY, double goalBearing) {
+        errorX = goalX * mmPerInch - robotX;
+        errorY = goalY * mmPerInch - robotY;
+        errorBearing = goalBearing - robotBearing;
+
+        double hypot = Math.hypot(errorX, errorY);
+        return errorBearing / hypot;
+    }
+
     public void activateTracking() {
         if (targetsRoverRuckus != null)
             targetsRoverRuckus.activate();
@@ -337,6 +432,7 @@ public class MM_VuforiaNav {
     public VuforiaLocalizer getVuforia() {
         return vuforia;
     }
+
     public boolean findTarget(){
         return false;
     }
