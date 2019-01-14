@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 
@@ -32,10 +33,14 @@ public class K_TeleOp extends LinearOpMode {
     static final double ELBOW_GEAR_RATIO = 26/1;
     static final double MAX_ELBOW_FORWARD = (ELBOW_GEAR_RATIO *(COUNTS_PER_MOTOR_REV * .75));
     static final int LIFT_HEIGHT = 1000;
+    static final double PHONE_UP = .85;
 
     int lastSlideTarget = 0;
     private boolean driveSlow = true;
     private boolean isButtonAHandled = false;
+
+    private LinearOpMode opMode;
+    private Servo phoneTilt = null;
 
     @Override
     public void runOpMode() {
@@ -44,6 +49,8 @@ public class K_TeleOp extends LinearOpMode {
 
         getDrivetrainHardware();
         getToolHardware();
+
+        movePhoneUp();
 
         waitForStart();
 
@@ -96,8 +103,8 @@ public class K_TeleOp extends LinearOpMode {
     private void collectorControl() {
         double collectorPower;
 
-        boolean collectorForward = gamepad2.y;
-        boolean collectorBackwards = gamepad2.a;
+        boolean collectorForward = gamepad2.left_trigger > 0;
+        boolean collectorBackwards = gamepad2.right_trigger > 0;
 
         if (collectorForward) {
             collectorPower = 1;
@@ -240,7 +247,10 @@ public class K_TeleOp extends LinearOpMode {
         liftMagnetBottom.setMode(DigitalChannel.Mode.INPUT);
         liftMagnetTop = hardwareMap.get(DigitalChannel.class, "liftMagnetTop");
         liftMagnetTop.setMode(DigitalChannel.Mode.INPUT);
+
+        phoneTilt = hardwareMap.get(Servo.class, "phoneTilt");
     }
-
-
+    public void movePhoneUp () {
+        phoneTilt.setPosition(PHONE_UP);
+    }
 }

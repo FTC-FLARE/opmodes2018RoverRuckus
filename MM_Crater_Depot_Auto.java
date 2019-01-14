@@ -27,7 +27,7 @@ public class MM_Crater_Depot_Auto extends LinearOpMode {
         goldMineralLocation = robot.lift.deployAndDetect(robot);
         robot.moveAwayFromLander();
         robot.driveAndStrafeMineralLocationForCrater(goldMineralLocation);
-        robot.driveAndDumpTeamMarker(goldMineralLocation);
+        robot.driveFromCraterMineralAndDumpTeamMarkerVuforia(goldMineralLocation);
         robot.drivetrain.backward(1, 65, 20);
     }
 

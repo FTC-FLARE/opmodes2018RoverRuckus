@@ -45,6 +45,8 @@ public class MM_TeleOp extends LinearOpMode {
         magneticSensor = hardwareMap.get(DigitalChannel.class, "magneticSensor");
         magneticSensor.setMode(DigitalChannel.Mode.INPUT);
 
+
+
 //        digitalTouchDown = hardwareMap.get(DigitalChannel.class, "sensor_digital");
 //        digitalTouchDown.setMode(DigitalChannel.Mode.INPUT);
 //

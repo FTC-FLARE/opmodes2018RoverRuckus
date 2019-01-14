@@ -24,7 +24,7 @@ public class MM_Tote_Bot
     static final double CENTER_MINERAL_INCHES = 5.6;
     static final double PUSH_MINERAL_INCHES = 22;
     static final double DRIVE_TO_DEPOT_COMPENSATE = 14.75;
-    static final double PHONE_DOWN = .7125;
+    static final double PHONE_DOWN = .74;
     static final double PHONE_UP = .85;
 
     public MM_Tote_Bot(LinearOpMode opMode){
@@ -99,7 +99,7 @@ public class MM_Tote_Bot
         drivetrain.gyroTurn(.5, -12);
     }
 
-    public void onlyMineralAllFour(String goldMineralLocation){
+    public void pushOnlyMineral(String goldMineralLocation){
         // Pushing Mineral Off Crater
         if (goldMineralLocation.equals("Left")) {
             drivetrain.forward(1, LEFT_MINERAL_INCHES, 4);
@@ -114,17 +114,50 @@ public class MM_Tote_Bot
         //drivetrain.gyroTurn(0.6,0);
     }
 
-    public void driveAndDumpTeamMarker(String goldMineralLocation) {
-        // Driving to Depot
+    public void driveFromCraterMineralAndDumpTeamMarkerVuforia(String goldMineralLocation) {
+        // Score mineral & drive to depot to drop marker
         if (goldMineralLocation.equals("Left")) {
-            drivetrain.forward(1, 46 - DRIVE_TO_DEPOT_COMPENSATE, 10);
+            drivetrain.strafeRight(.9, 24, 8);
+            drivetrain.backward(1, 5, 5);
+            drivetrain.forward(1, 5, 5);
         } else if (goldMineralLocation.equals("Right")) {
-            drivetrain.forward(1, 46 + DRIVE_TO_DEPOT_COMPENSATE, 10);
+            drivetrain.backward(1, 14.5, 5);
+            drivetrain.forward(1, 16, 5);
+            drivetrain.gyroTurn(.6, -155);
         } else {
-            drivetrain.forward(1, 46, 7);
+            drivetrain.strafeRight(.9, 13.5, 8);
+            drivetrain.backward(1, 12, 5);
+            drivetrain.forward(1, 15, 5);
+            drivetrain.gyroTurn(.6, -155);
         }
+        strafeRightTillTarget(5);
+        moveToLocation(-1, 59, 179, 10, 5);
         driveToDepot();
         deployTeamMarker(1);
+        drivetrain.backward(1, 58, 10);
+    }
+
+    public void driveFromDepotMineralAndDumpTeamMarkerVuforia(String goldMineralLocation) {
+        // Score mineral & drive to depot to drop marker
+        if (goldMineralLocation.equals("Left")) {
+            drivetrain.strafeRight(.9, 24, 8);
+            drivetrain.backward(1, 5, 5);
+            drivetrain.forward(1, 5, 5);
+        } else if (goldMineralLocation.equals("Right")) {
+            drivetrain.backward(1, 14.5, 5);
+            drivetrain.forward(1, 16, 5);
+            drivetrain.gyroTurn(.6, -155);
+        } else {
+            drivetrain.strafeRight(.9, 13.5, 8);
+            drivetrain.backward(1, 12, 5);
+            drivetrain.forward(1, 15, 5);
+            drivetrain.gyroTurn(.6, -155);
+        }
+        strafeRightTillTarget(5);
+        moveToLocation(-1, 59, 179, 10, 5);
+//        driveToDepot();
+//        deployTeamMarker(1);
+//        drivetrain.backward(1, 58, 10);
     }
 
     public void driveAndStrafeMineralLocationForDepot(String goldMineralLocation){
@@ -149,12 +182,18 @@ public class MM_Tote_Bot
     }
 
     private void driveToDepot() {
-        drivetrain.gyroTurn(0.6, 43);
-        drivetrain.forward(1, 39, 10);
+//        drivetrain.gyroTurn(0.6, 43);
+        drivetrain.forward(1, 45, 10);
     }
 
     public void deployTeamMarker(double speed) {
+
         collector.setCollector(speed);
+
+        runtime.reset();
+        while (opMode.opModeIsActive() && runtime.seconds() < 1){
+        }
+        collector.setCollector(0);
     }
 
     public void pushMineralDepot(String goldMineralLocation){
