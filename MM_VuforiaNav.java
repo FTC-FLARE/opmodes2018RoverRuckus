@@ -87,7 +87,7 @@ public class MM_VuforiaNav {
         relativeBearing = 0;
     }
 
-    public int targetsAreVisible() {
+    public int targetsAreVisible(MM_DriveTrain driveTrain) {
         targetFound = -1;
         targetName = "None";
 
@@ -108,8 +108,8 @@ public class MM_VuforiaNav {
                     robotX = trans.get(0);
                     robotY = trans.get(1);
 
-                    robotBearing = rot.thirdAngle;
 //                    robotBearing = rot.thirdAngle;
+                    robotBearing = driveTrain.getCurrentHeading();
                     targetRange = Math.hypot(robotX, robotY);
                     targetBearing = Math.toDegrees(Math.asin(robotX / targetRange));
                     relativeBearing = targetBearing - robotBearing;
@@ -330,8 +330,10 @@ public class MM_VuforiaNav {
     public void navTelemetry() {
         if (targetFound >= 0) {
             opMode.telemetry.addData("Visible", targetName);
+
+            opMode.telemetry.addData("Angles", "R : G : Error [%4.0f°]:[%4.0f°] (%4.0f°)", robotBearing, goalBearing, errorBearing);
+
             opMode.telemetry.addData("Robot", "[X]:[Y] (B) [%5.1fin]:[%5.1fin] (%4.0f°)", robotX / mmPerInch, robotY / mmPerInch, robotBearing);
-//            opMode.telemetry.addData("Target", "[R] (B):(RB) [%5.1fin] (%4.0f°):(%4.0f°)", targetRange / mmPerInch, targetBearing, relativeBearing);
             opMode.telemetry.addData("Goal", "[X]:[Y]  (GB)  [%5.1fin]:[%5.1fin]  (%4.0f°)", goalX / mmPerInch, goalY / mmPerInch, goalBearing);
             opMode.telemetry.addData("Error", "[X]:[Y] (B)  [%5.1fin]:[%5.1fin]  (%4.0f°)", errorX / mmPerInch, errorY / mmPerInch, errorBearing);
             opMode.telemetry.addData("- Turn    ", "%s %4.0f°", errorBearing < 0 ? ">>> CW " : "<<< CCW", Math.abs(errorBearing));

@@ -300,6 +300,7 @@ public class MM_DriveTrain {
 
         return onTarget;
     }
+
     public void strafeToAngle (double angle, int inches) {
         double flPower;
         double frPower;

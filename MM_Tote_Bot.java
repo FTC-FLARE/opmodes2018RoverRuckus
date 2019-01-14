@@ -216,7 +216,7 @@ public class MM_Tote_Bot
 
         runtime.reset();
         while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
-            if (vuforiaNav.targetsAreVisible() >= 0) {
+            if (vuforiaNav.targetsAreVisible(drivetrain) >= 0) {
                 closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, tolerance); // sets robot goals and determines the error
             } else {
                 vuforiaNav.findTarget();
@@ -238,7 +238,7 @@ public class MM_Tote_Bot
 
         runtime.reset();
         while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
-            if (vuforiaNav.targetsAreVisible() >= 0) {
+            if (vuforiaNav.targetsAreVisible(drivetrain) >= 0) {
                 closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, gainAxial, gainLateral, gainYaw, tolerance); // sets robot goals and determines the error
             } else {
                 vuforiaNav.findTarget();
@@ -263,14 +263,14 @@ public class MM_Tote_Bot
 //        double rotateFactor = vuforiaNav.getRotateFactor(goalX, goalY, goalBearing);
 
         while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
-            if (vuforiaNav.targetsAreVisible() >= 0) {
+            if (vuforiaNav.targetsAreVisible(drivetrain) >= 0) {
 //                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, speed, rotateSpeed); // use trig functions
                 closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, rotateFactor); // use trig functions
             } else {
                 vuforiaNav.findTarget();
             }
 
-            vuforiaNav.navTelemetryTrig();
+            vuforiaNav.navTelemetry();
             drivetrain.moveRobotForTrig();
 
             opMode.telemetry.update();
@@ -288,7 +288,7 @@ public class MM_Tote_Bot
         drivetrain.setMotorPowers(.2, -.2, .2, -.2);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
-            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
+            if (vuforiaNav.targetsAreVisible(drivetrain) > -1){ // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
@@ -304,7 +304,7 @@ public class MM_Tote_Bot
         drivetrain.setMotorPowers(-.2, .2, -.2, .2);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
-            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
+            if (vuforiaNav.targetsAreVisible(drivetrain) > -1){ // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
@@ -320,7 +320,7 @@ public class MM_Tote_Bot
         drivetrain.setMotorPowers(.18, -.18, -.18, .18);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
-            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
+            if (vuforiaNav.targetsAreVisible(drivetrain) > -1){ // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
