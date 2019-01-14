@@ -91,7 +91,7 @@ public class MM_DriveTrain {
 
             while (opMode.opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (flMotor.isBusy() || frMotor.isBusy() || blMotor.isBusy() || brMotor.isBusy())) {
+                    (flMotor.isBusy() && frMotor.isBusy() && blMotor.isBusy() && brMotor.isBusy())) {
                 encoderTelemetry();
             }
             setMotorPowerSame(0);
