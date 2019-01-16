@@ -337,32 +337,6 @@ public class MM_DriveTrain {
     }
 
     public void moveRobot() {
-        double flPower = driveAxial + driveLateral + driveYaw;
-        double frPower = driveAxial - driveLateral - driveYaw;
-        double blPower = driveAxial - driveLateral + driveYaw;
-        double brPower = driveAxial + driveLateral - driveYaw;
-
-        double max = Math.max(Math.abs(flPower), Math.abs(frPower));
-        max = Math.max(max, Math.abs(blPower));
-        max = Math.max(max, Math.abs(brPower));
-        if (max > 1.0)
-        {
-            flPower /= max;
-            frPower /= max;
-            blPower /= max;
-            brPower /= max;
-        }
-
-        flMotor.setPower(flPower * 0.75);
-        frMotor.setPower(frPower * 0.75);
-        blMotor.setPower(blPower * 0.75);
-        brMotor.setPower(brPower * 0.75);
-
-        opMode.telemetry.addData("Axes  ", "A[%+5.2f], L[%+5.2f], Y[%+5.2f]", driveAxial, driveLateral, driveYaw);
-        opMode.telemetry.addData("Wheels", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
-    }
-
-    public void moveRobotForTrig() {
         flMotor.setPower(frontLeftPowerForVuforia * 0.5);
         frMotor.setPower(frontRightPowerForVuforia * 0.5);
         blMotor.setPower(backLeftPowerForVuforia * 0.5);

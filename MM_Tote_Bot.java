@@ -117,21 +117,29 @@ public class MM_Tote_Bot
     public void driveFromCraterMineralAndDumpTeamMarkerVuforia(String goldMineralLocation) {
         // Score mineral & drive to depot to drop marker
         if (goldMineralLocation.equals("Left")) {
-            drivetrain.strafeRight(.9, 24, 8);
-            drivetrain.backward(1, 5, 5);
-            drivetrain.forward(1, 5, 5);
+            strafeRightTillTarget(3);  // capture Vuforia data
+            moveToLocation(21, 23, -155, .25, 3); // square up in case we find the target from a different place
+            moveToLocation(18, 40, -155, .10, 3);
+            drivetrain.forward(1, 8, 2);
+
         } else if (goldMineralLocation.equals("Right")) {
             drivetrain.backward(1, 14.5, 5);
             drivetrain.forward(1, 16, 5);
-            drivetrain.gyroTurn(.6, -155);
+            drivetrain.gyroTurn(.6, -160);
+//            moveToLocation(43.5, 18.1, -140, .10, 5);
+//            drivetrain.forward(1, 10, 2);
         } else {
-            drivetrain.strafeRight(.9, 13.5, 8);
-            drivetrain.backward(1, 12, 5);
-            drivetrain.forward(1, 15, 5);
-            drivetrain.gyroTurn(.6, -155);
+            strafeRightTillTarget(3);  // capture Vuforia data
+            moveToLocation(21, 23, -155, .25, 3); // square up in case we find the target from a different place
+            moveToLocation(29, 25.7,-147, .25, 3); //center
+            drivetrain.forward(1, 13, 2);
+            //drivetrain.gyroTurn(.6, -155);
         }
-        strafeRightTillTarget(5);
-        moveToLocation(-1, 59, 179, 10, 5);
+
+        strafeRightTillTarget(3);
+//        pauseSeconds(2);
+        moveToLocation(-1, 59, 179, -.25, 5);  // line up at pictograph
+//        pauseSeconds(4);
         driveToDepot();
         deployTeamMarker(1);
         drivetrain.backward(1, 58, 10);
@@ -140,24 +148,27 @@ public class MM_Tote_Bot
     public void driveFromDepotMineralAndDumpTeamMarkerVuforia(String goldMineralLocation) {
         // Score mineral & drive to depot to drop marker
         if (goldMineralLocation.equals("Left")) {
-            drivetrain.strafeRight(.9, 24, 8);
-            drivetrain.backward(1, 5, 5);
-            drivetrain.forward(1, 5, 5);
+            strafeRightTillTarget(3);  // capture Vuforia data
+            moveToLocation(21, 23, -155, .25, 3); // square up in case we find the target from a different place
+            moveToLocation(18, 40, -155, .10, 3);
+            drivetrain.backward(1, 25, 2);
+            drivetrain.gyroTurn(.6,25);
+
         } else if (goldMineralLocation.equals("Right")) {
-            drivetrain.backward(1, 14.5, 5);
-            drivetrain.forward(1, 16, 5);
-            drivetrain.gyroTurn(.6, -155);
+            drivetrain.backward(1, 32, 5);
+            drivetrain.gyroTurn(.6, 71);
+            drivetrain.forward(1,10,3);
+//            moveToLocation(43.5, 18.1, -140, .10, 5);
+//            drivetrain.forward(1, 10, 2);
         } else {
-            drivetrain.strafeRight(.9, 13.5, 8);
-            drivetrain.backward(1, 12, 5);
-            drivetrain.forward(1, 15, 5);
-            drivetrain.gyroTurn(.6, -155);
+            strafeRightTillTarget(3);  // capture Vuforia data
+            moveToLocation(21, 23, -155, .25, 3); // square up in case we find the target from a different place
+            moveToLocation(29, 25.7,-147, .25, 3); //center
+            drivetrain.backward(1, 27, 2);
+            drivetrain.gyroTurn(.6, 23);
         }
-        strafeRightTillTarget(5);
-        moveToLocation(-1, 59, 179, 10, 5);
-//        driveToDepot();
-//        deployTeamMarker(1);
-//        drivetrain.backward(1, 58, 10);
+
+        deployTeamMarker(1);
     }
 
     public void driveAndStrafeMineralLocationForDepot(String goldMineralLocation){
@@ -211,51 +222,7 @@ public class MM_Tote_Bot
         }
     }
 
-    public boolean moveToLocation (double goalX, double goalY, double goalBearing, double tolerance, double timeOutS){
-        boolean closeEnough = false;
-
-        runtime.reset();
-        while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
-            if (vuforiaNav.targetsAreVisible(drivetrain) >= 0) {
-                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, tolerance); // sets robot goals and determines the error
-            } else {
-                vuforiaNav.findTarget();
-            }
-
-            vuforiaNav.navTelemetry();
-            drivetrain.moveRobot();
-
-            opMode.telemetry.update();
-        }
-        if (closeEnough) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean moveToLocation (double goalX, double goalY, double goalBearing, double gainAxial, double gainLateral, double gainYaw, double tolerance, double timeOutS){
-        boolean closeEnough = false;
-
-        runtime.reset();
-        while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
-            if (vuforiaNav.targetsAreVisible(drivetrain) >= 0) {
-                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, gainAxial, gainLateral, gainYaw, tolerance); // sets robot goals and determines the error
-            } else {
-                vuforiaNav.findTarget();
-            }
-
-            vuforiaNav.navTelemetry();
-            drivetrain.moveRobot();
-
-            opMode.telemetry.update();
-        }
-        if (closeEnough) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean moveToLocation (double goalX, double goalY, double goalBearing, int rotateFactor, double timeOutS){
+    public boolean moveToLocation (double goalX, double goalY, double goalBearing, double rotateFactor, double timeOutS){
         boolean closeEnough = false;
 
         runtime.reset();
@@ -263,7 +230,7 @@ public class MM_Tote_Bot
 //        double rotateFactor = vuforiaNav.getRotateFactor(goalX, goalY, goalBearing);
 
         while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
-            if (vuforiaNav.targetsAreVisible(drivetrain) >= 0) {
+            if (vuforiaNav.targetsAreVisible() >= 0) {
 //                closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, speed, rotateSpeed); // use trig functions
                 closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, rotateFactor); // use trig functions
             } else {
@@ -271,7 +238,7 @@ public class MM_Tote_Bot
             }
 
             vuforiaNav.navTelemetry();
-            drivetrain.moveRobotForTrig();
+            drivetrain.moveRobot();
 
             opMode.telemetry.update();
         }
@@ -288,7 +255,7 @@ public class MM_Tote_Bot
         drivetrain.setMotorPowers(.2, -.2, .2, -.2);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
-            if (vuforiaNav.targetsAreVisible(drivetrain) > -1){ // found a target
+            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
@@ -304,7 +271,7 @@ public class MM_Tote_Bot
         drivetrain.setMotorPowers(-.2, .2, -.2, .2);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
-            if (vuforiaNav.targetsAreVisible(drivetrain) > -1){ // found a target
+            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
@@ -320,7 +287,7 @@ public class MM_Tote_Bot
         drivetrain.setMotorPowers(.18, -.18, -.18, .18);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS){
-            if (vuforiaNav.targetsAreVisible(drivetrain) > -1){ // found a target
+            if (vuforiaNav.targetsAreVisible() > -1){ // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
@@ -328,5 +295,12 @@ public class MM_Tote_Bot
 
         return foundTarget;
     }
+public void pauseSeconds(double seconds){
+    runtime.reset();
+    while (opMode.opModeIsActive() & runtime.seconds() < 6)  {
+        vuforiaNav.navTelemetry();
+        opMode.telemetry.update();
+    }
 
+}
 }
