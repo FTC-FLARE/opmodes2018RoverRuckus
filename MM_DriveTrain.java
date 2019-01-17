@@ -367,4 +367,10 @@ public class MM_DriveTrain {
 //        driveYaw = Range.clip(yaw, -1, 1);
         driveYaw = yaw;
     }
+    public void alignWithTarget() {
+        brakesOn();
+        backward(1, 5, 2); // back up to release from lander latch
+        strafeRight(1, 14, 3);
+        gyroTurn(.6, -165);  // face the target
+    }
 }

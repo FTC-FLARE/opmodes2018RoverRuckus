@@ -25,12 +25,10 @@ public class MM_Crater_Mineral_Marker_Crater extends LinearOpMode {
         waitForStart();
 
         goldMineralLocation = robot.lift.deployAndDetect(robot); // Detect gold location while lowering from lander
-
-        robot.drivetrain.brakesOn();
-        robot.drivetrain.backward(1, 5, 5); // back up to release from lander latch
-        robot.drivetrain.strafeRight(1, 14, 5);
-        robot.drivetrain.gyroTurn(.6, -165);
-        robot.driveFromCraterMineralAndDumpTeamMarkerVuforia(goldMineralLocation);
+        robot.drivetrain.alignWithTarget();
+        robot.sampleMineral(goldMineralLocation);
+        robot.driveAndDumpTeamMarker();
+        //robot.backUpToCrater();
 
         while (opModeIsActive()) {
             robot.vuforiaNav.navTelemetry();
