@@ -81,8 +81,6 @@ public class MM_Tensorflow {
                 goldMineralLocation = "Left";
             }
         }
-//        opMode.telemetry.addData("GoldX", getGoldMineralX());
-//        opMode.telemetry.addData("SilverX", getSilverMineralX());
         return goldMineralLocation;
     }
 

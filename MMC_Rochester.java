@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "Crater Auto", group = "MM")
 @Disabled
-public class MM_Crater_Auto extends LinearOpMode {
+public class MMC_Rochester extends LinearOpMode {
     private MM_Tote_Bot robot = new MM_Tote_Bot(this);
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -53,11 +53,9 @@ public class MM_Crater_Auto extends LinearOpMode {
 
         waitForStart();
 
-        goldMineralLocation = robot.lift.deployAndDetect(robot);
-        robot.moveAwayFromLander();
-        robot.driveAndStrafeMineralLocationForCrater(goldMineralLocation);
-        //robot.drivetrain.gyroTurn(.6, -90);
-        //robot.drivetrain.forward(1, 10, 3);
+        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
+        robot.rochesterLeaveLander();
+        robot.rochesterOnly(goldMineralLocation);
     }
 
 }

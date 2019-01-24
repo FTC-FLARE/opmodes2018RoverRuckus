@@ -23,17 +23,11 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
 public class MM_VuforiaNav {
-    private static final int MAX_TARGETS = 4;
-    private static final double Y_CLOSE_ENOUGH = 40;      // Within 4.0 cm of target Y
-    private static final double X_CLOSE_ENOUGH = 40;      // Within 1.0 cm of target X
-    static final double TARGET_DISTANCE = 400.0;    // Hold robot's center 400 mm (16 inches) from target
-
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = VuforiaLocalizer.CameraDirection.BACK;
     private static final String VUFORIA_KEY = "AZ5woGn/////AAABmSDumo9pA0BDovmvaV5gG7wLT6ES1QrKcI14JsHiEtQ7Gb6e+KM8ILBQGt8hjfHFNwKixlUDQ6vuz0AdKiYelGz5KcfJ9UV4xCMuDxDGvzOqYIS46QLHeFtsx4c4EP5o5a+H4ZM4crit1cva6avYORJXAH4EYCNluvawI+qm7qOru223kxOmNw83qfl17h9ASLtxxZuZ6OiAnQEq0OsSJf5n43QzVRFI55ZYdVAq+7bSeBEMptf1ZbrzvAZWnq8diTq+ojaADlkeZloub6tSLn4OqqbVtnjk65dNVejK2nTY1y7j7v0BQAkqc0w6oMkg30ynxOoyGid1xjSDDEaS1DvbVjQO0ODZZ4O9v6C30dtQ";
     private VuforiaLocalizer vuforia;
 
     private LinearOpMode opMode;
-    private ElapsedTime runtime = new ElapsedTime();
 
     private static final float mmPerInch = 25.4f;
     private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
@@ -41,10 +35,6 @@ public class MM_VuforiaNav {
 
     static final double DISTANCE_TOLERANCE = 3 * mmPerInch;  // how close is good enough?
     static final double ANGLE_TOLERANCE = 3;
-
-    public static final double YAW_GAIN = 0.018;   // Rate at which we respond to heading error
-    public static final double LATERAL_GAIN = 0.0027;  // Rate at which we respond to off-axis error
-    public static final double AXIAL_GAIN = 0.0017;  // Rate at which we respond to target distance errors
 
     final int CAMERA_FORWARD_DISPLACEMENT = 0;   // Camera is 0 mm in front of robot center
     final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // Camera is 200 mm above ground
@@ -59,9 +49,6 @@ public class MM_VuforiaNav {
     private double robotY;         // Y displacement from target center
     private double robotBearing;   // Robot's rotation around the Z axis (CCW is positive)
     private double gyroBearing;  // gyro heading
-    private double targetRange;    // Range from robot's center to target in mm
-    private double targetBearing;  // Heading of the target , relative to the robot's unrotated center
-    private double relativeBearing;// Heading to the target from the robot's current bearing.
     private double goalRange;
 
     private double goalX;
@@ -82,10 +69,7 @@ public class MM_VuforiaNav {
 
         robotX = 0;
         robotY = 0;
-        targetRange = 0;
-        targetBearing = 0;
         robotBearing = 0;
-        relativeBearing = 0;
     }
 
     public int targetsAreVisible() {
@@ -111,10 +95,6 @@ public class MM_VuforiaNav {
 
                     robotBearing = rot.thirdAngle;
                     gyroBearing = driveTrain.getCurrentHeading();
-
-                    targetRange = Math.hypot(robotX, robotY);
-                    targetBearing = Math.toDegrees(Math.asin(robotX / targetRange));
-                    relativeBearing = targetBearing - robotBearing;
                 }
                 targetFound = targetNumber;
                 break;
@@ -155,23 +135,11 @@ public class MM_VuforiaNav {
         double x1 = errorX*cosA - errorY*sinA;
         double y1 = errorX*sinA + errorY*cosA;
 
-/*
-//  Before moving/changing for rotation
-        double flPower = x1 + y1 - rotateAdder;
-        double frPower = -x1 + y1 + rotateAdder;
-        double blPower = -x1 + y1 - rotateAdder;
-        double brPower = x1 + y1 + rotateAdder;
-*/
-
         //  Only control x & y before normalizing
         double flPower = x1 + y1;
         double frPower = -x1 + y1;
         double blPower = -x1 + y1;
         double brPower = x1 + y1;
-
-
-//        opMode.telemetry.addData("x1: y1 : rotate", "[%+5.2f] : [%+5.2f] : [%+5.2f]", x1, y1, rotateAdder);
-//        opMode.telemetry.addData("Before normal", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
 
         // first normalization to get within a predictable range
         double max = Math.max(Math.abs(flPower), Math.abs(frPower));
@@ -184,7 +152,6 @@ public class MM_VuforiaNav {
             blPower /= max;
             brPower /= max;
         }
-//        opMode.telemetry.addData("After normal", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", flPower, frPower, blPower, brPower);
 
         if (errorBearing != 0) {
             // add rotation
@@ -237,15 +204,6 @@ public class MM_VuforiaNav {
             opMode.telemetry.addLine();
             opMode.telemetry.addData("- Turn    ", "%s %4.0f°", errorBearing == 0 ? "STOP!" : errorBearing < 0 ? ">>> CW " : "<<< CCW", Math.abs(errorBearing));
             opMode.telemetry.addData("- Distance", "%s %5.1fin", goalRange == 0 ? "STOP!" : "move ", goalRange);
-/*
-            if (targetFound == 2 || targetFound == 3) {
-                opMode.telemetry.addData("- Strafe  ", "%s %5.1fin", Math.abs(errorX) < X_CLOSE_ENOUGH ? "STOP!" : (errorX > 0 ? "RIGHT" : "LEFT"), Math.abs(errorX / mmPerInch));
-                opMode.telemetry.addData("- Drive", "%s %5.1fin", Math.abs(errorY) < Y_CLOSE_ENOUGH ? "STOP!" : errorY > 0 ? "FORWARD" : "BACK", Math.abs(errorY / mmPerInch));
-            }else{
-                opMode.telemetry.addData("- Strafe  ", "%s %5.1fin", Math.abs(errorY) < Y_CLOSE_ENOUGH ? "STOP!" : (errorY > 0 ? "RIGHT" : "LEFT"), Math.abs(errorY / mmPerInch));
-                opMode.telemetry.addData("- Drive", "%s %5.1fin", Math.abs(errorX) < X_CLOSE_ENOUGH ? "STOP!" : errorX > 0 ? "FORWARD" : "BACK", Math.abs(errorX / mmPerInch));
-            }
-*/
         } else {
             opMode.telemetry.addData("Visible", "- - - -");
         }
@@ -257,7 +215,6 @@ public class MM_VuforiaNav {
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = CAMERA_CHOICE;
-//        parameters.useExtendedTracking = false;
 
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
@@ -293,49 +250,17 @@ public class MM_VuforiaNav {
         redFootprint.setLocation(redFootprintLocationOnField);
         ((VuforiaTrackableDefaultListener) redFootprint.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
 
-/*
-        OpenGLMatrix frontCratersLocationOnField = OpenGLMatrix
-                .translation(-mmFTCFieldWidth, 0, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90));
-        frontCraters.setLocation(frontCratersLocationOnField);
-        ((VuforiaTrackableDefaultListener) frontCraters.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-
-*/
         OpenGLMatrix frontCratersLocationOnField = OpenGLMatrix
                 .translation(0, mmFTCFieldWidth, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0));
         frontCraters.setLocation(frontCratersLocationOnField);
         ((VuforiaTrackableDefaultListener) frontCraters.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
 
-/*
-        OpenGLMatrix frontCratersLocationOnField = OpenGLMatrix
-                .translation(0, mmFTCFieldWidth, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90));
-        frontCraters.setLocation(frontCratersLocationOnField);
-        ((VuforiaTrackableDefaultListener) frontCraters.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-*/
-
         OpenGLMatrix backSpaceLocationOnField = OpenGLMatrix
                 .translation(0, mmFTCFieldWidth, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0));
         backSpace.setLocation(backSpaceLocationOnField);
         ((VuforiaTrackableDefaultListener) backSpace.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-/*
-        OpenGLMatrix backSpaceLocationOnField = OpenGLMatrix
-                .translation(mmFTCFieldWidth, 0, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90));
-        backSpace.setLocation(backSpaceLocationOnField);
-        ((VuforiaTrackableDefaultListener) backSpace.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-*/
-    }
-
-    public double getRotateFactor(double goalX, double goalY, double goalBearing) {
-        errorX = goalX * mmPerInch - robotX;
-        errorY = goalY * mmPerInch - robotY;
-        errorBearing = goalBearing - robotBearing;
-
-        double hypot = Math.hypot(errorX, errorY);
-        return errorBearing / hypot;
     }
 
     public void activateTracking() {

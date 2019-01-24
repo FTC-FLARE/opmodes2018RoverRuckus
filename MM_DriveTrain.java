@@ -25,35 +25,12 @@ public class MM_DriveTrain {
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double DRIVE_POWER = 0.6;
-    static final double STRAFE_POWER = 1;
 
     private ElapsedTime runtime = new ElapsedTime();
     private LinearOpMode opMode;
     private Orientation angles;
 
-    private double  driveAxial      = 0 ;   // Positive is forward
-    private double  driveLateral    = 0 ;   // Positive is right
-    private double  driveYaw        = 0 ;   // Positive is CCW
-
     private double frontLeftPowerForVuforia = 0;
-
-    public void setFrontLeftPowerForVuforia(double frontLeftPowerForVuforia) {
-        this.frontLeftPowerForVuforia = frontLeftPowerForVuforia;
-    }
-
-    public void setFrontRightPowerForVuforia(double frontRightPowerForVuforia) {
-        this.frontRightPowerForVuforia = frontRightPowerForVuforia;
-    }
-
-    public void setBackLeftPowerForVuforia(double backLeftPowerForVuforia) {
-        this.backLeftPowerForVuforia = backLeftPowerForVuforia;
-    }
-
-    public void setBackRightPowerForVuforia(double backRightPowerForVuforia) {
-        this.backRightPowerForVuforia = backRightPowerForVuforia;
-    }
-
     private double frontRightPowerForVuforia = 0;
     private double backLeftPowerForVuforia = 0;
     private double backRightPowerForVuforia = 0;
@@ -77,7 +54,6 @@ public class MM_DriveTrain {
 
         initializeGyro();
         initHardware();
-//        composeTelemetry();
     }
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches, double timeoutS) {
@@ -152,16 +128,10 @@ public class MM_DriveTrain {
         brMotor.setPower(brSpeed);
     }
 
-    public void strafeRightPower(double power) {
-        setMotorPowers(power, -power, -power, power);
-    }
-    public void strafeLeftPower(double power) {
-        setMotorPowers(-power, power, power, -power);
-    }
-
     public void stopMotors(){
         setMotorPowerSame(0);
     }
+
     public void initHardware() {
         stopAndResetEncoders();
         setUsingEncoder();
@@ -195,57 +165,6 @@ public class MM_DriveTrain {
 
         imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-    }
-    public void driveUntilCrater(){
-        runtime.reset();
-        setMotorPowerSame(DRIVE_POWER);
-        while ((angles.secondAngle) > -3.0 && opMode.opModeIsActive()){
-            opMode.telemetry.addData("Angle", angles.secondAngle);
-            opMode.telemetry.addData("Time", runtime.seconds());
-            opMode.telemetry.update();
-        }
-        stopMotors();
-    }
-    public void strafeRightUntilCrater(){
-        runtime.reset();
-        strafeRightPower(STRAFE_POWER);
-        while ((angles.thirdAngle) > -3.5 && opMode.opModeIsActive() && runtime.seconds() < 2){
-            opMode.telemetry.addData("Angle", angles.thirdAngle);
-            opMode.telemetry.addData("Time", runtime.seconds());
-            opMode.telemetry.update();
-        }
-        stopMotors();
-    }
-    public void strafeLeftUntilCrater(){
-        runtime.reset();
-        strafeLeftPower(STRAFE_POWER);
-        while ((angles.secondAngle) > -3.0 && opMode.opModeIsActive()){
-            opMode.telemetry.addData("Angle", angles.secondAngle);
-            opMode.telemetry.addData("Time", runtime.seconds());
-            opMode.telemetry.update();
-        }
-        stopMotors();
-    }
-    public void driveUntilDepot() {
-        runtime.reset();
-        setMotorPowerSame(DRIVE_POWER);
-        while (runtime.seconds() < 1.5 && opMode.opModeIsActive()) {
-            opMode.telemetry.addData("Time", runtime.seconds());
-            opMode.telemetry.update();
-        }
-        stopMotors();
-    }
-
-    void composeTelemetry() {
-
-        opMode.telemetry.addAction(new Runnable() { @Override public void run()
-        {
-            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        }
-        });
-        opMode.telemetry.addData("heading", angles.firstAngle);
-        opMode.telemetry.addData("roll", angles.secondAngle);
-        opMode.telemetry.addData("pitch", angles.thirdAngle);
     }
     public double getError(double targetAngle) {
 
@@ -301,41 +220,6 @@ public class MM_DriveTrain {
         return onTarget;
     }
 
-    public void strafeToAngle (double angle, int inches) {
-        double flPower;
-        double frPower;
-        double blPower;
-        double brPower;
-
-        flPower = Math.sin(angle + Math.PI/4);
-        frPower = Math.cos(angle + Math.PI/4);
-        blPower = Math.cos(angle + Math.PI/4);
-        brPower = Math.sin(angle + Math.PI/4);
-
-        setUsingEncoder();
-        setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-        setEncoderTargets(inches, inches, inches, inches);
-        setMotorPowers(flPower, frPower, blPower, brPower);
-        while ((frMotor.isBusy() || flMotor.isBusy() || blMotor.isBusy() || brMotor.isBusy()) && opMode.opModeIsActive());
-    }
-    public void driveWithSticks() {
-        double drive = -opMode.gamepad1.left_stick_y;
-        double turn = opMode.gamepad1.right_stick_x;
-        double strafe = opMode.gamepad1.left_stick_x;
-
-        double frontLeftPower = Range.clip(drive + strafe + turn, -1.0, 1.0);
-        double frontRightPower = Range.clip(drive - strafe - turn, -1.0, 1.0);
-        double backLeftPower = Range.clip(drive - strafe + turn, -1.0, 1.0);
-        double backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
-
-        flMotor.setPower(frontLeftPower);
-        frMotor.setPower(frontRightPower);
-        blMotor.setPower(backLeftPower);
-        brMotor.setPower(backRightPower);
-
-        opMode.telemetry.addData("","flPower %.2f - frPower %.2f - blPower %.2f - brPower %.2f", frontLeftPower, frontRightPower, backLeftPower, backRightPower);
-    }
-
     public void moveRobot() {
         flMotor.setPower(frontLeftPowerForVuforia * 0.5);
         frMotor.setPower(frontRightPowerForVuforia * 0.5);
@@ -348,29 +232,19 @@ public class MM_DriveTrain {
     public double getCurrentHeading() {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle;
     }
-
-    public void manualDrive()  {
-        setAxial(-opMode.gamepad1.left_stick_y);
-        setLateral(opMode.gamepad1.left_stick_x);
-        setYaw(opMode.gamepad1.right_stick_x);
+    public void setFrontLeftPowerForVuforia(double frontLeftPowerForVuforia) {
+        this.frontLeftPowerForVuforia = frontLeftPowerForVuforia;
     }
 
-    public void setAxial(double axial) {
-//        driveAxial = Range.clip(axial, -1, 1);
-        driveAxial = axial;
+    public void setFrontRightPowerForVuforia(double frontRightPowerForVuforia) {
+        this.frontRightPowerForVuforia = frontRightPowerForVuforia;
     }
-    public void setLateral(double lateral) {
-//        driveLateral = Range.clip(lateral, -1, 1);
-        driveLateral = lateral;
+
+    public void setBackLeftPowerForVuforia(double backLeftPowerForVuforia) {
+        this.backLeftPowerForVuforia = backLeftPowerForVuforia;
     }
-    public void setYaw(double yaw) {
-//        driveYaw = Range.clip(yaw, -1, 1);
-        driveYaw = yaw;
-    }
-    public void alignWithTarget() {
-        brakesOn();
-        backward(1, 5, 2); // back up to release from lander latch
-        strafeRight(1, 14, 3);
-        gyroTurn(.6, -165);  // face the target
+
+    public void setBackRightPowerForVuforia(double backRightPowerForVuforia) {
+        this.backRightPowerForVuforia = backRightPowerForVuforia;
     }
 }

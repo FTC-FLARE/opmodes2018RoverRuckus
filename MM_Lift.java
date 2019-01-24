@@ -8,8 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 
 public class MM_Lift {
     private DcMotor lift = null;
-    //    private MM_Tensorflow tensorflow = null; //Make this the one we use after we finish testing
-    public MM_Tensorflow tensorflow = null;
+    private MM_Tensorflow tensorflow = null;
     private DigitalChannel liftMagnetBottom;
     private DigitalChannel liftMagnetTop;
 
@@ -33,13 +32,10 @@ public class MM_Lift {
 
         tensorflow = new MM_Tensorflow(opMode, vuforia);
     }
-
-    public String deployAndDetect(MM_Tote_Bot robot) {
+    public String deployAndDetect() {
         tensorflow.activateTfod();
         lift.setPower(1);
-        robot.movePhoneDown();
 
-//          while (opMode.opModeIsActive() ) {
         while (opMode.opModeIsActive() && (!isTriggered(liftMagnetTop) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
 
             opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
@@ -56,23 +52,10 @@ public class MM_Lift {
             goldMineralLocation = "Center";
         }
         tensorflow.shutdownTfod();
-        robot.movePhoneUp();
         return goldMineralLocation;
     }
 
-    public String detect() {
-
-        if (goldMineralLocation.equals("")) {   // We haven't found gold yet
-            goldMineralLocation = tensorflow.mineForGold();
-        } else {  // We already found gold
-            opMode.telemetry.addData("Gold detected", goldMineralLocation);
-        }
-        opMode.telemetry.update();
-
-        return goldMineralLocation;
-    }
-
-    public boolean isTriggered(DigitalChannel Sensor) {
+    private boolean isTriggered(DigitalChannel Sensor) {
         return !Sensor.getState();
     }
 }

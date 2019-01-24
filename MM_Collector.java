@@ -11,11 +11,8 @@ public class MM_Collector {
     public MM_Collector(LinearOpMode opMode){
         this.opMode = opMode;
         collector = opMode.hardwareMap.get(DcMotor.class, "collector");
-
         collector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         collector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
     }
     public void setCollector(double speed) {
         collector.setPower(speed);
