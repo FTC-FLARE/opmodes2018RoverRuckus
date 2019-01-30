@@ -33,8 +33,11 @@ public class MM_VuforiaNav {
     private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
     private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
 
-    static final double DISTANCE_TOLERANCE = 3 * mmPerInch;  // how close is good enough?
-    static final double ANGLE_TOLERANCE = 3;
+    //ToDo may want to change thse?
+    static final double DISTANCE_TOLERANCE = 2 * mmPerInch;  // how close is good enough?
+    static final double ANGLE_TOLERANCE = 2;
+    static final double SLOW_DOWN_FACTOR = .0014;
+//    static final double SLOW_DOWN_FACTOR = .0017;
 
     final int CAMERA_FORWARD_DISPLACEMENT = 0;   // Camera is 0 mm in front of robot center
     final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // Camera is 200 mm above ground
@@ -113,8 +116,16 @@ public class MM_VuforiaNav {
         errorY = this.goalY - robotY;
 
         goalRange = Math.hypot(errorX, errorY);
-        if (Math.abs(goalRange) < DISTANCE_TOLERANCE) {
+//        if (Math.abs(goalRange) < DISTANCE_TOLERANCE) {
+//            errorX = 0;
+//            errorY = 0;
+//        }
+
+        if (Math.abs(errorX) < DISTANCE_TOLERANCE) {
             errorX = 0;
+        }
+
+        if (Math.abs(errorY) < DISTANCE_TOLERANCE) {
             errorY = 0;
         }
 
@@ -130,10 +141,17 @@ public class MM_VuforiaNav {
             errorBearing = 0;
         }
 
+//        double moveAngle = Math.atan2(errorY, errorX);
+//        double cosA = Math.cos(moveAngle - 90);
+//        double sinA = Math.sin(moveAngle - 90);
+
         double cosA = Math.cos(Math.toRadians(errorBearing - 90));
         double sinA = Math.sin(Math.toRadians(errorBearing - 90));
         double x1 = errorX*cosA - errorY*sinA;
         double y1 = errorX*sinA + errorY*cosA;
+
+//        double x1 = errorX;
+//        double y1 = errorY;
 
         //  Only control x & y before normalizing
         double flPower = x1 + y1;
@@ -153,8 +171,14 @@ public class MM_VuforiaNav {
             brPower /= max;
         }
 
-        if (errorBearing != 0) {
+        if (errorBearing != 0) { //0 or within tolerance
             // add rotation
+
+//            double rotatePower = rotateFactor * errorBearing;
+//            flPower -= rotatePower;
+//            frPower += rotatePower;
+//            blPower -= rotatePower;
+//            brPower += rotatePower;
             flPower -= rotateFactor;
             frPower += rotateFactor;
             blPower -= rotateFactor;
@@ -174,8 +198,9 @@ public class MM_VuforiaNav {
         }
 
         double rampFactor = 1;
-        if (goalRange < (6 * mmPerInch)){   // time to ramp down
-            rampFactor = (goalRange - (2 * mmPerInch)) / (6 * mmPerInch);
+        if (goalRange < (8 * mmPerInch)){   // time to ramp down
+//            rampFactor = (goalRange - (2 * mmPerInch)) / (6 * mmPerInch);
+            rampFactor = goalRange * SLOW_DOWN_FACTOR;
         }
 
         driveTrain.setFrontLeftPowerForVuforia(flPower * rampFactor);

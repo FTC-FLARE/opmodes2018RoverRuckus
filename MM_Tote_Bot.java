@@ -81,7 +81,6 @@ public class MM_Tote_Bot {
         // Score mineral & drive to depot to drop marker
         if (goldMineralLocation.equals("Left")) {
             scoreLeftMineral();
-            drivetrain.forward(1, 8, 2);
 
         } else if (goldMineralLocation.equals("Right")) {
             drivetrain.backward(1, 14.5, 5);
@@ -89,23 +88,33 @@ public class MM_Tote_Bot {
             drivetrain.gyroTurn(.6, -160);
         } else {
             scoreCenterMineral();
-            drivetrain.forward(1, 13, 2);
         }
     }
 
     public void scoreCenterMineral() {
-        verifyLocationForSampling();
-        moveToLocation(29, 25.7, -147, .25, 3); //center
+        strafeRightTillTarget(3);  // capture Vuforia data
+        moveToLocation(23.6, 24.4, -146, .20, 10); //center
+        scoreMineral();
+        drivetrain.forward(1, 4, 2);
+    }
+
+    public void scoreMineral() {
+        hitterOut();
+        runtime.reset();
+        while (runtime.seconds() < 2 && opMode.opModeIsActive()){
+        }
+        hitterIn();
     }
 
     public void verifyLocationForSampling() {
         strafeRightTillTarget(3);  // capture Vuforia data
-        moveToLocation(21, 23, -155, .25, 3); // square up in case we find the target from a different place
+        moveToLocation(21, 23, -155, .2, 30); // square up in case we find the target from a different place
     }
 
     public void findAndMoveToPic() {
         strafeRightTillTarget(3);
-        moveToLocation(-1, 59, 179, -.25, 5);  // line up at pictograph
+        moveToLocation(-1, 59, 177, -.25, 5);  // line up at pictograph
+        drivetrain.strafeRight(.4, 1, 4);
     }
 
     public void driveAndDumpTeamMarker(){
@@ -113,7 +122,7 @@ public class MM_Tote_Bot {
         deployTeamMarker();
     }
     public void backUpToCrater(){
-        drivetrain.backward(1, 58, 10);
+        drivetrain.backward(1, 59, 10);
     }
     public void sampleMineralDepot(String goldMineralLocation) {
         // Score mineral & drive to depot to drop marker
@@ -137,7 +146,9 @@ public class MM_Tote_Bot {
 
     public void scoreLeftMineral() {
         verifyLocationForSampling();
-        moveToLocation(18, 40, -155, .10, 3);
+        moveToLocation(11.8, 35.4, -148, .20, 10);
+        scoreMineral();
+        drivetrain.forward(1, 5, 2);
     }
 
     public void deployTeamMarker() {
@@ -155,21 +166,22 @@ public class MM_Tote_Bot {
 
         runtime.reset();
 
-        while (!closeEnough && runtime.seconds() < timeOutS && opMode.opModeIsActive()) {
+        while (opMode.opModeIsActive() && !closeEnough && runtime.seconds() < timeOutS) {
             if (vuforiaNav.targetsAreVisible() >= 0) {
                 closeEnough = vuforiaNav.cruiseControl(goalX, goalY, goalBearing, rotateFactor); // use trig functions
-            } else {
-                vuforiaNav.findTarget();
+                vuforiaNav.navTelemetry();
+                drivetrain.moveRobot();
+
+                opMode.telemetry.update();
+            } else {  // we lost the target
+//                vuforiaNav.findTarget();
+                turnClockwiseTillTarget(8);
             }
-
-            vuforiaNav.navTelemetry();
-            drivetrain.moveRobot();
-
-            opMode.telemetry.update();
         }
         if (closeEnough) {
             return true;
         }
+        drivetrain.stopMotors();
         return false;
     }
 
@@ -177,13 +189,15 @@ public class MM_Tote_Bot {
         boolean foundTarget = false;
 
         runtime.reset();
-        drivetrain.setMotorPowers(.2, -.2, .2, -.2);
+        drivetrain.setMotorPowers(.15, -.15, .15, -.15);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS) {
             if (vuforiaNav.targetsAreVisible() > -1) { // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
+            opMode.telemetry.addLine("searching for target - turn CW");
+            opMode.telemetry.update();
         }
 
         return foundTarget;
@@ -193,13 +207,15 @@ public class MM_Tote_Bot {
         boolean foundTarget = false;
 
         runtime.reset();
-        drivetrain.setMotorPowers(-.2, .2, -.2, .2);
+        drivetrain.setMotorPowers(-.15, .15, -.15, .15);
 
         while (opMode.opModeIsActive() && !foundTarget && runtime.seconds() < timeOutS) {
             if (vuforiaNav.targetsAreVisible() > -1) { // found a target
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
+            opMode.telemetry.addLine("searching for target - turn CCW");
+            opMode.telemetry.update();
         }
 
         return foundTarget;
@@ -216,6 +232,8 @@ public class MM_Tote_Bot {
                 foundTarget = true;
                 drivetrain.stopMotors();
             }
+            opMode.telemetry.addLine("searching for target - Strafe Right");
+            opMode.telemetry.update();
         }
 
         return foundTarget;
@@ -234,6 +252,14 @@ public class MM_Tote_Bot {
         drivetrain.strafeRight(1, 14, 3);
         drivetrain.gyroTurn(.6, -165);  // face the target
     }
+
+    public void tempLeaveLander() {
+        drivetrain.brakesOn();
+//        drivetrain.backward(1, 5, 2); // back up to release from lander latch
+        drivetrain.strafeRight(1, 14, 3);
+        drivetrain.gyroTurn(.6, -165);  // face the target
+    }
+
     public String deployAndDetect() {
         movePhoneDown();
         String goldMineralLocation = lift.deployAndDetect();

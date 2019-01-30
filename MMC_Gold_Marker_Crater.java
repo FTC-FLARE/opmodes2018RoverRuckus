@@ -24,11 +24,20 @@ public class MMC_Gold_Marker_Crater extends LinearOpMode {
 
         waitForStart();
 
-        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
+//        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
+//        robot.leaveLander();
         robot.leaveLander();
+        goldMineralLocation = "Left";
         robot.sampleMineralCrater(goldMineralLocation);   // use goldMineralLocation to knock off gold mineral
-        robot.findAndMoveToPic();   // use vuforia to line up to picture parallel to wall
-        robot.driveAndDumpTeamMarker();
-        robot.backUpToCrater();
+        //robot.findAndMoveToPic();   // use vuforia to line up to picture parallel to wall
+        //robot.driveAndDumpTeamMarker();
+        //robot.backUpToCrater();
+
+        while(opModeIsActive()) {
+            robot.vuforiaNav.targetsAreVisible();
+            robot.vuforiaNav.navTelemetry();
+            telemetry.update();
+        }
+
     }
 }
