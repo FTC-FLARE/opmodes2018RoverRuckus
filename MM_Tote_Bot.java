@@ -12,6 +12,7 @@ public class MM_Tote_Bot {
     public MM_Lift lift = null;
 
     private Servo phoneTilt;
+    private Servo mineralHitter;
 
     private LinearOpMode opMode;
     private ElapsedTime runtime = new ElapsedTime();
@@ -23,6 +24,8 @@ public class MM_Tote_Bot {
     static final double PHONE_DOWN = .74;
     static final double PHONE_UP = .85;
 
+    static final double HITTER_IN = .85;
+    static final double HITTER_OUT = .3;
 
     public MM_Tote_Bot(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -35,7 +38,9 @@ public class MM_Tote_Bot {
         vuforiaNav = new MM_VuforiaNav(opMode, drivetrain);
         lift = new MM_Lift(opMode, vuforiaNav.getVuforia());
         phoneTilt = opMode.hardwareMap.get(Servo.class, "phoneTilt");
+        mineralHitter = opMode.hardwareMap.get(Servo.class, "mineralHitter");
         movePhoneUp();
+        hitterIn();
     }
 
     public void rochesterLeaveLander() {
@@ -53,6 +58,12 @@ public class MM_Tote_Bot {
         phoneTilt.setPosition(PHONE_DOWN);
     }
 
+    public void hitterIn() {
+        mineralHitter.setPosition(HITTER_IN);
+    }
+    public void hitterOut() {
+        mineralHitter.setPosition(HITTER_OUT);
+    }
     public void rochesterOnly(String goldMineralLocation) {
         // Pushing Mineral Off Crater
         if (goldMineralLocation.equals("Left")) {
