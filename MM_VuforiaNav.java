@@ -37,8 +37,8 @@ public class MM_VuforiaNav {
     static final double DISTANCE_TOLERANCE = 3 * mmPerInch;  // how close is good enough?
     static final double ANGLE_TOLERANCE = 2;
     static final double SLOW_DOWN_FACTOR = .0014;
-//    static final double SLOW_DOWN_FACTOR = .0017;
-    private static final double DRIVE_POWER = .35;
+    //    static final double SLOW_DOWN_FACTOR = .0017;
+    private static final double DRIVE_POWER = 1;
 
     final int CAMERA_FORWARD_DISPLACEMENT = 0;   // Camera is 0 mm in front of robot center
     final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // Camera is 200 mm above ground
@@ -61,6 +61,8 @@ public class MM_VuforiaNav {
     private double errorX; // X displacement of robot from goal
     private double errorY; // Y displacement of robot from goal
     private double errorBearing;
+    private double driveAngle;
+    private boolean goalReversed = false;
 
     public MM_VuforiaNav(LinearOpMode opMode, MM_DriveTrain driveTrain) {
         this.opMode = opMode;
@@ -122,6 +124,7 @@ public class MM_VuforiaNav {
 //            errorX = 0;
 //            errorY = 0;
 //        }
+        driveAngle = Math.toDegrees(Math.atan(errorY/errorX));
 
         if (Math.abs(errorX) < DISTANCE_TOLERANCE) {
             errorX = 0;
@@ -131,32 +134,38 @@ public class MM_VuforiaNav {
             errorY = 0;
         }
 
-        errorBearing  = this.goalBearing - gyroBearing;
-        if (errorBearing > 180){
-            errorBearing -= 360;
-        }
-        else if (errorBearing < -180){
-            errorBearing += 360;
-        }
+        errorBearing = this.goalBearing - gyroBearing;
+        errorBearing = fixAngle(errorBearing);
 
         if (Math.abs(errorBearing) <= ANGLE_TOLERANCE) {
             errorBearing = 0;
         }
 
+//        if ((errorX != 0 || errorY != 0 || errorBearing != 0) && passedGoal()) { // reverse the goals if we have passed our goal.
+//            reverseGoal();
+//            goalReversed = true;
+//        }
+
         double rotatePower = rotateFactor * errorBearing;
-        double driveAngle = Math.toDegrees(Math.atan(goalY/goalX));
         double theta = driveAngle - gyroBearing + 45;
 
-        double powerFL = DRIVE_POWER*(Math.cos(Math.toRadians(theta)) - rotatePower);
-        double powerBR = DRIVE_POWER*(Math.cos(Math.toRadians(theta)) + rotatePower);
-        double powerFR = DRIVE_POWER*(Math.sin(Math.toRadians(theta)) + rotatePower);
-        double powerBL = DRIVE_POWER*(Math.sin(Math.toRadians(theta)) - rotatePower);
+        double cos = Math.cos(Math.toRadians(theta));
+        double sin = Math.sin(Math.toRadians(theta));
+
+        if (errorX == 0 && errorY == 0){
+            cos = 0;
+            sin = 0;
+        }
+
+        double powerFL = DRIVE_POWER * cos - rotatePower;
+        double powerBR = DRIVE_POWER * cos + rotatePower;
+        double powerFR = DRIVE_POWER * sin + rotatePower;
+        double powerBL = DRIVE_POWER * sin - rotatePower;
 
         double max = Math.max(Math.abs(powerFL), Math.abs(powerFR));
         max = Math.max(max, Math.abs(powerBL));
         max = Math.max(max, Math.abs(powerBR));
-        if (max > 1.0)
-        {
+        if (max > 1.0) {
             powerFL /= max;
             powerFR /= max;
             powerBL /= max;
@@ -164,7 +173,7 @@ public class MM_VuforiaNav {
         }
 
         double rampFactor = 1;
-        if (goalRange < (8 * mmPerInch)){   // time to ramp down
+        if (goalRange < (8 * mmPerInch)) {   // time to ramp down
             rampFactor = goalRange * SLOW_DOWN_FACTOR;
         }
 
@@ -174,6 +183,46 @@ public class MM_VuforiaNav {
         driveTrain.setBackRightPowerForVuforia(powerBR * rampFactor);
 
         return (errorBearing == 0 && errorX == 0 && errorY == 0);
+    }
+
+    public double fixAngle(double bearing) {
+        if (bearing > 180) {
+            bearing -= 360;
+        } else if (bearing < -180) {
+            bearing += 360;
+        }
+        return bearing;
+    }
+
+    private void reverseGoal() {
+        goalX *= -1;
+        goalY *= -1;
+        driveAngle -= 180;
+        driveAngle = fixAngle(driveAngle);
+    }
+
+    public boolean passedGoal() {
+        if (driveAngle > -90 && driveAngle <= 0) {
+            if (robotX > goalX || robotY < goalY){
+                return true;
+            }
+        }
+        if (driveAngle > 0 && driveAngle <= 90){
+            if (robotX > goalX || robotY > goalY){
+                return true;
+            }
+        }
+        if (driveAngle > 90 && driveAngle <= 180){
+            if (robotX < goalX || robotY > goalY){
+                return true;
+            }
+        }
+        if (driveAngle < -90 || driveAngle >= -180){
+            if (robotX < goalX || robotY < goalY){
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean oldCruiseControl(double goalX, double goalY, double goalBearing, double rotateFactor) {
@@ -198,13 +247,8 @@ public class MM_VuforiaNav {
             errorY = 0;
         }
 
-        errorBearing  = this.goalBearing - gyroBearing;
-        if (errorBearing > 180){
-            errorBearing -= 360;
-        }
-        else if (errorBearing < -180){
-            errorBearing += 360;
-        }
+        errorBearing = this.goalBearing - gyroBearing;
+        errorBearing = fixAngle(errorBearing);
 
         if (Math.abs(errorBearing) < ANGLE_TOLERANCE) {
             errorBearing = 0;
@@ -216,8 +260,8 @@ public class MM_VuforiaNav {
 
         double cosA = Math.cos(Math.toRadians(errorBearing - 90));
         double sinA = Math.sin(Math.toRadians(errorBearing - 90));
-        double x1 = errorX*cosA - errorY*sinA;
-        double y1 = errorX*sinA + errorY*cosA;
+        double x1 = errorX * cosA - errorY * sinA;
+        double y1 = errorX * sinA + errorY * cosA;
 
 //        double x1 = errorX;
 //        double y1 = errorY;
@@ -232,8 +276,7 @@ public class MM_VuforiaNav {
         double max = Math.max(Math.abs(flPower), Math.abs(frPower));
         max = Math.max(max, Math.abs(blPower));
         max = Math.max(max, Math.abs(brPower));
-        if (max > 1.0)
-        {
+        if (max > 1.0) {
             flPower /= max;
             frPower /= max;
             blPower /= max;
@@ -257,8 +300,7 @@ public class MM_VuforiaNav {
             max = Math.max(Math.abs(flPower), Math.abs(frPower));
             max = Math.max(max, Math.abs(blPower));
             max = Math.max(max, Math.abs(brPower));
-            if (max > 1.0)
-            {
+            if (max > 1.0) {
                 flPower /= max;
                 frPower /= max;
                 blPower /= max;
@@ -267,7 +309,7 @@ public class MM_VuforiaNav {
         }
 
         double rampFactor = 1;
-        if (goalRange < (8 * mmPerInch)){   // time to ramp down
+        if (goalRange < (8 * mmPerInch)) {   // time to ramp down
 //            rampFactor = (goalRange - (2 * mmPerInch)) / (6 * mmPerInch);
             rampFactor = goalRange * SLOW_DOWN_FACTOR;
         }
@@ -279,6 +321,7 @@ public class MM_VuforiaNav {
 
         return (errorBearing == 0 && errorX == 0 && errorY == 0);
     }
+
     public void setGoalToCurrent() {
         goalX = robotX;
         goalY = robotY;
@@ -295,8 +338,10 @@ public class MM_VuforiaNav {
             opMode.telemetry.addData("Goal", "[X]:[Y]  (GB)  [%5.1fin]:[%5.1fin]  (%4.0f°)", goalX / mmPerInch, goalY / mmPerInch, goalBearing);
             opMode.telemetry.addData("Error", "[X]:[Y] (B)  [%5.1fin]:[%5.1fin]  (%4.0f°)", errorX / mmPerInch, errorY / mmPerInch, errorBearing);
             opMode.telemetry.addLine();
+            opMode.telemetry.addData("DriveAngle", driveAngle);
+            opMode.telemetry.addData("ReversedGoal", goalReversed);
             opMode.telemetry.addData("- Turn    ", "%s %4.0f°", errorBearing == 0 ? "STOP!" : errorBearing < 0 ? ">>> CW " : "<<< CCW", Math.abs(errorBearing));
-            opMode.telemetry.addData("- Distance", "%s %5.1fin", goalRange == 0 ? "STOP!" : "move ", goalRange/mmPerInch);
+            opMode.telemetry.addData("- Distance", "%s %5.1fin", goalRange == 0 ? "STOP!" : "move ", goalRange / mmPerInch);
         } else {
             opMode.telemetry.addData("Visible", "- - - -");
         }
@@ -365,7 +410,7 @@ public class MM_VuforiaNav {
         return vuforia;
     }
 
-    public boolean findTarget(){
+    public boolean findTarget() {
         return false;
     }
 }

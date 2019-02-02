@@ -24,15 +24,12 @@ public class MMC_2Gold_Marker extends LinearOpMode {
 
         waitForStart();
 
-        //goldMineralLocation = "Center";
-        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
+//        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
         robot.leaveLander();
+        goldMineralLocation = "Left";
         robot.sampleMineralCrater(goldMineralLocation);   // use goldMineralLocation to knock off gold mineral
-
-        //TODO finish scoring second mineral
-        robot.deployTeamMarker();
-
+        robot.findAndMoveToPic();   // use vuforia to line up to picture parallel to wall
         robot.driveAndDumpTeamMarker();
-        //robot.backUpToCrater();
+        robot.sampleDoubleMineral(goldMineralLocation);
     }
 }
