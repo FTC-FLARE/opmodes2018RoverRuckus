@@ -192,15 +192,15 @@ public class K_TeleOp extends LinearOpMode {
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.FORWARD);
 
-        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//
+//        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     private void getToolHardware() {
         collectorMotor = hardwareMap.get(DcMotor.class, "collector");

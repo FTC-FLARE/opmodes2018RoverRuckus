@@ -37,6 +37,7 @@ public class MM_VuforiaNav {
     static final double DISTANCE_TOLERANCE = 3 * mmPerInch;  // how close is good enough?
     static final double ANGLE_TOLERANCE = 2;
     static final double SLOW_DOWN_FACTOR = .0014;
+//    static final double SLOW_DOWN_FACTOR = .0025;
     //    static final double SLOW_DOWN_FACTOR = .0017;
     private static final double DRIVE_POWER = 1;
 
@@ -173,7 +174,7 @@ public class MM_VuforiaNav {
         }
 
         double rampFactor = 1;
-        if (goalRange < (8 * mmPerInch)) {   // time to ramp down
+        if (goalRange < (7 * mmPerInch)) {   // time to ramp down
             rampFactor = goalRange * SLOW_DOWN_FACTOR;
         }
 

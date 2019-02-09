@@ -43,13 +43,6 @@ public class MM_Tote_Bot {
         hitterIn();
     }
 
-    public void rochesterLeaveLander() {
-        drivetrain.backward(1, 7, 5);
-        drivetrain.strafeRight(1, 15, 5);
-        drivetrain.gyroTurn(.5, 0);
-//        drivetrain.strafeLeft(1, .5, 2);
-    }
-
     public void movePhoneUp() {
         phoneTilt.setPosition(PHONE_UP);
     }
@@ -64,19 +57,6 @@ public class MM_Tote_Bot {
     public void hitterOut() {
         mineralHitter.setPosition(HITTER_OUT);
     }
-    public void rochesterOnly(String goldMineralLocation) {
-        // Pushing Mineral Off Crater
-        if (goldMineralLocation.equals("Left")) {
-            drivetrain.forward(1, LEFT_MINERAL_INCHES, 4);
-        } else if (goldMineralLocation.equals("Right")) {
-            drivetrain.backward(1, RIGHT_MINERAL_INCHES, 4);
-        } else {
-            drivetrain.forward(1, CENTER_MINERAL_INCHES, 2);
-        }
-        drivetrain.strafeRight(1, PUSH_MINERAL_INCHES, 4);
-        drivetrain.gyroTurn(.5, -12);
-    }
-
     public void sampleMineralCrater(String goldMineralLocation) {
         // Score mineral & drive to depot to drop marker
         if (goldMineralLocation.equals("Left")) {
@@ -94,18 +74,32 @@ public class MM_Tote_Bot {
     public void sampleDoubleMineral(String goldMineralLocation) {
         if (goldMineralLocation.equals("Right")){
             drivetrain.gyroTurn(.6, 54);
-            drivetrain.backward(1, 25, 6);
+            drivetrain.backward(1, 30, 6);
+            strafeRightTillTarget(5);  // capture Vuforia data
+            moveToLocation(60.9, 3.8, 90, .01, 10);
+            drivetrain.gyroTurn(.7, -90);
+            drivetrain.forward(1, 22, 15);
         }
         else if (goldMineralLocation.equals("Center")) {
-            drivetrain.gyroTurn(.6, 25);
-            drivetrain.backward(1, 25, 6);
+            drivetrain.gyroTurn(.6, 20);
+            drivetrain.backward(1, 20, 6);
+            drivetrain.forward(1, 21 , 6);
+            drivetrain.gyroTurn(.6, -85);
+            drivetrain.forward(1, 63, 5);
         }
         else if (goldMineralLocation.equals("Left")){
             drivetrain.gyroTurn(.6, -10);
-            drivetrain.backward(1, 25, 6);
-            drivetrain.gyroTurn(.6, 0);
-            drivetrain.strafeLeft(1, 5, 5);
-            drivetrain.backward(1, 45, 10);
+            drivetrain.backward(1, 31, 6);
+
+            // drving to our crater
+            drivetrain.forward(1, 30, 6);
+            drivetrain.gyroTurn(.6, -90);
+            drivetrain.forward(1, 64, 7);
+
+            // Driving to opponent crater
+//            drivetrain.gyroTurn(.6, 0);
+//            drivetrain.strafeLeft(1, 12, 5);
+//            drivetrain.backward(1, 48, 10);
         }
         else {
         }
@@ -113,7 +107,7 @@ public class MM_Tote_Bot {
 
     public void scoreCenterMineral() {
         strafeRightTillTarget(5);  // capture Vuforia data
-        moveToLocation(23.2, -24.6, 127, .01, 10); //center
+        moveToLocation(21.3, -21.3, 124, .02, 10); //center
         scoreMineral();
         drivetrain.forward(1, 6, 2);
     }
@@ -133,8 +127,8 @@ public class MM_Tote_Bot {
 
     public void findAndMoveToPic() {
         strafeRightTillTarget(3);
-        moveToLocation(59.4, 3.0, 88, .01, 7);  // line up at pictograph
-        drivetrain.strafeRight(.4, 1, 4);
+        moveToLocation(58.0, 3.0, 88, .01, 7);  // line up at pictograph
+        drivetrain.strafeRight(.4, 2.3, 4);
     }
 
     public void driveAndDumpTeamMarker(){
@@ -142,6 +136,7 @@ public class MM_Tote_Bot {
         deployTeamMarker();
     }
     public void backUpToCrater(){
+        drivetrain.gyroTurn(.7, -90);
         drivetrain.backward(1, 59, 10);
     }
     public void sampleMineralDepot(String goldMineralLocation) {

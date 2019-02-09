@@ -24,9 +24,9 @@ public class MMC_2Gold_Marker extends LinearOpMode {
 
         waitForStart();
 
-//        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
+        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
         robot.leaveLander();
-        goldMineralLocation = "Left";
+//        goldMineralLocation = "Left";
         robot.sampleMineralCrater(goldMineralLocation);   // use goldMineralLocation to knock off gold mineral
         robot.findAndMoveToPic();   // use vuforia to line up to picture parallel to wall
         robot.driveAndDumpTeamMarker();
