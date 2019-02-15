@@ -25,7 +25,7 @@ public class MM_Tote_Bot {
     static final double PHONE_UP = .85;
 
     static final double HITTER_IN = .85;
-    static final double HITTER_OUT = .3;
+    static final double HITTER_OUT = .25;
 
     public MM_Tote_Bot(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -66,7 +66,7 @@ public class MM_Tote_Bot {
             drivetrain.backward(1, 8, 5);
             scoreMineral();
             drivetrain.forward(1, 12.5, 5);
-            drivetrain.gyroTurn(.6, 110);
+            drivetrain.gyroTurn(.6, 108);
         } else {
             scoreCenterMineral();
         }
@@ -74,26 +74,32 @@ public class MM_Tote_Bot {
     public void sampleDoubleMineral(String goldMineralLocation) {
         if (goldMineralLocation.equals("Right")){
             drivetrain.gyroTurn(.6, 54);
-            drivetrain.backward(1, 30, 6);
+            drivetrain.backward(1, 10.5, 6);
+            scoreMineral();
+            drivetrain.strafeRight(1,3,6);
+            drivetrain.backward(1,20.5, 6);
             strafeRightTillTarget(5);  // capture Vuforia data
-            moveToLocation(60.9, 3.8, 90, .01, 10);
-            drivetrain.gyroTurn(.7, -90);
-            drivetrain.forward(1, 22, 15);
+            moveToLocation(59.9, 0, 90, .01, 10);
+            drivetrain.gyroTurn(.7, 93);
+            drivetrain.strafeRight(1, 2, 4);
+            drivetrain.backward(1, 20, 15);
         }
         else if (goldMineralLocation.equals("Center")) {
             drivetrain.gyroTurn(.6, 20);
             drivetrain.backward(1, 20, 6);
             drivetrain.forward(1, 21 , 6);
-            drivetrain.gyroTurn(.6, -85);
-            drivetrain.forward(1, 63, 5);
+            drivetrain.gyroTurn(.7, -85);
+            drivetrain.forward(1, 64, 5);
         }
         else if (goldMineralLocation.equals("Left")){
-            drivetrain.gyroTurn(.6, -10);
-            drivetrain.backward(1, 31, 6);
+            drivetrain.gyroTurn(.75, -2);
+            drivetrain.backward(1, 27, 6);
+            scoreMineral();
 
             // drving to our crater
-            drivetrain.forward(1, 30, 6);
-            drivetrain.gyroTurn(.6, -90);
+            drivetrain.forward(1, 28.5, 6);
+            drivetrain.gyroTurn(.75, -85);
+            drivetrain.strafeLeft(1,3,6);
             drivetrain.forward(1, 64, 7);
 
             // Driving to opponent crater
@@ -107,7 +113,8 @@ public class MM_Tote_Bot {
 
     public void scoreCenterMineral() {
         strafeRightTillTarget(5);  // capture Vuforia data
-        moveToLocation(21.3, -21.3, 124, .02, 10); //center
+//        moveToLocation(18, -24.8, 124, .02, 10); //center
+        moveToLocation(22, -26.3, 125, .02, 10); //center
         scoreMineral();
         drivetrain.forward(1, 6, 2);
     }
@@ -127,8 +134,8 @@ public class MM_Tote_Bot {
 
     public void findAndMoveToPic() {
         strafeRightTillTarget(3);
-        moveToLocation(58.0, 3.0, 88, .01, 7);  // line up at pictograph
-        drivetrain.strafeRight(.4, 2.3, 4);
+        moveToLocation(56.0, 3.0, 88, .0085, 7);  // line up at pictograph
+        drivetrain.strafeRight(.8, 5, 4);
     }
 
     public void driveAndDumpTeamMarker(){
@@ -136,8 +143,8 @@ public class MM_Tote_Bot {
         deployTeamMarker();
     }
     public void backUpToCrater(){
-        drivetrain.gyroTurn(.7, -90);
-        drivetrain.backward(1, 59, 10);
+        drivetrain.gyroTurn(.7, -95);
+        drivetrain.forward(1, 62, 10);
     }
     public void sampleMineralDepot(String goldMineralLocation) {
         // Score mineral & drive to depot to drop marker
@@ -265,7 +272,7 @@ public class MM_Tote_Bot {
         drivetrain.brakesOn();
         drivetrain.backward(1, 5, 2); // back up to release from lander latch
         drivetrain.strafeRight(1, 14, 3);
-        drivetrain.gyroTurn(.6, 105);  // face the target
+        drivetrain.gyroTurn(.6, 104);  // face the target
     }
 
     public void tempLeaveLander() {
@@ -281,4 +288,12 @@ public class MM_Tote_Bot {
         movePhoneUp();
         return goldMineralLocation;
     }
+    public void turnOnArmForAutoAndCollect(double power){
+        runtime.reset();
+        while(opMode.opModeIsActive() && runtime.seconds() < 1.5){
+            arm.turnOnArm(power);
+        }
+        collector.setCollector(-1);
+    }
+
 }
