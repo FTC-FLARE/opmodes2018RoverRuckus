@@ -36,9 +36,7 @@ public class MM_VuforiaNav {
     //ToDo may want to change thse?
     static final double DISTANCE_TOLERANCE = 3 * mmPerInch;  // how close is good enough?
     static final double ANGLE_TOLERANCE = 2;
-    static final double SLOW_DOWN_FACTOR = .0014;
-//    static final double SLOW_DOWN_FACTOR = .0025;
-    //    static final double SLOW_DOWN_FACTOR = .0017;
+    static final double SLOW_DOWN_FACTOR = .0017;
     private static final double DRIVE_POWER = 1;
 
     final int CAMERA_FORWARD_DISPLACEMENT = 0;   // Camera is 0 mm in front of robot center
