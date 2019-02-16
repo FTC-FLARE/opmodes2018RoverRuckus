@@ -74,14 +74,14 @@ public class MM_Tote_Bot {
     public void sampleDoubleMineral(String goldMineralLocation) {
         if (goldMineralLocation.equals("Right")){
             drivetrain.gyroTurn(.6, 54);
-            drivetrain.backward(1, 10.5, 6);
+            drivetrain.backward(1, 11.5, 6);
             scoreMineral();
-            drivetrain.strafeRight(1,3,6);
-            drivetrain.backward(1,20.5, 6);
+            drivetrain.strafeRight(1,6,6);
+            drivetrain.backward(1,22, 6);
             strafeRightTillTarget(5);  // capture Vuforia data
-            moveToLocation(59.9, 0, 90, .01, 10);
-            drivetrain.gyroTurn(.7, 93);
-            drivetrain.strafeRight(1, 2, 4);
+            moveToLocation(57.5, 0, 90, .01, 10);
+            //drivetrain.gyroTurn(.7, 93);
+            drivetrain.strafeRight(1, 3, 4);
             drivetrain.backward(1, 20, 15);
         }
         else if (goldMineralLocation.equals("Center")) {
@@ -89,6 +89,7 @@ public class MM_Tote_Bot {
             drivetrain.backward(1, 20, 6);
             drivetrain.forward(1, 21 , 6);
             drivetrain.gyroTurn(.7, -85);
+            drivetrain.strafeLeft(1, 4, 6);
             drivetrain.forward(1, 64, 5);
         }
         else if (goldMineralLocation.equals("Left")){
@@ -114,7 +115,7 @@ public class MM_Tote_Bot {
     public void scoreCenterMineral() {
         strafeRightTillTarget(5);  // capture Vuforia data
 //        moveToLocation(18, -24.8, 124, .02, 10); //center
-        moveToLocation(22, -26.3, 125, .02, 10); //center
+        moveToLocation(22, -26.3, 125, .03, 10); //center
         scoreMineral();
         drivetrain.forward(1, 6, 2);
     }
@@ -269,7 +270,7 @@ public class MM_Tote_Bot {
         }
     }
     public void leaveLander() {
-        drivetrain.brakesOn();
+        //.brakesOn();
         drivetrain.backward(1, 5, 2); // back up to release from lander latch
         drivetrain.strafeRight(1, 14, 3);
         drivetrain.gyroTurn(.6, 104);  // face the target
