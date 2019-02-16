@@ -28,7 +28,7 @@ public class K_TeleOp extends LinearOpMode {
     private DcMotor liftMotor = null;
 
     static final int SLIDE_INCREMENT = 250;
-    static final int ELBOW_INCREMENT = 300;
+    static final int ELBOW_INCREMENT = 700;
     static final double COUNTS_PER_MOTOR_REV = (560 * 3);
     static final double ELBOW_GEAR_RATIO = 26/1;
     static final double MAX_ELBOW_FORWARD = (ELBOW_GEAR_RATIO *(COUNTS_PER_MOTOR_REV * .75));
