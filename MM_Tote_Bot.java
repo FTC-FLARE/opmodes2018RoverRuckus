@@ -111,6 +111,46 @@ public class MM_Tote_Bot {
         else {
         }
     }
+    public void sampleDepotMineral(String goldMineralLocation) {
+        if (goldMineralLocation.equals("Right")){
+            drivetrain.gyroTurn(.6, 54);
+            drivetrain.backward(1, 11.5, 6);
+            scoreMineral();
+            drivetrain.strafeRight(1,6,6);
+            drivetrain.backward(1,22, 6);
+            strafeRightTillTarget(5);  // capture Vuforia data
+            moveToLocation(57.5, 0, 90, .01, 10);
+            drivetrain.gyroTurn(.7, -85);
+            drivetrain.strafeLeft(1, 4, 4);
+            drivetrain.forward(1, 20, 15);
+        }
+        else if (goldMineralLocation.equals("Center")) {
+            drivetrain.gyroTurn(.6, 20);
+            drivetrain.backward(1, 20, 6);
+            drivetrain.forward(1, 21 , 6);
+            drivetrain.gyroTurn(.7, -85);
+            drivetrain.strafeLeft(1, 4, 6);
+            drivetrain.forward(1, 64, 5);
+        }
+        else if (goldMineralLocation.equals("Left")){
+            drivetrain.gyroTurn(.75, -2);
+            drivetrain.backward(1, 27, 6);
+            scoreMineral();
+
+            // drving to our crater
+            drivetrain.forward(1, 28.5, 6);
+            drivetrain.gyroTurn(.75, -85);
+            drivetrain.strafeLeft(1,3,6);
+            drivetrain.forward(1, 64, 7);
+
+            // Driving to opponent crater
+//            drivetrain.gyroTurn(.6, 0);
+//            drivetrain.strafeLeft(1, 12, 5);
+//            drivetrain.backward(1, 48, 10);
+        }
+        else {
+        }
+    }
 
     public void scoreCenterMineral() {
         strafeRightTillTarget(5);  // capture Vuforia data
@@ -129,7 +169,7 @@ public class MM_Tote_Bot {
     }
 
     public void verifyLocationForSampling() {
-        strafeRightTillTarget(5);  // capture Vuforia data
+        strafeRightTillTarget(15);  // capture Vuforia data TODO change value back to 5 after I test this
 //        moveToLocation(21, 23, -155, .2, 30); // square up in case we find the target from a different place
     }
 
@@ -150,7 +190,11 @@ public class MM_Tote_Bot {
     public void sampleMineralDepot(String goldMineralLocation) {
         // Score mineral & drive to depot to drop marker
         if (goldMineralLocation.equals("Left")) {
-            scoreLeftMineral();
+//            scoreLeftMineral();
+            verifyLocationForSampling();
+            moveToLocation(0,0,0,0,0); // TODO use testoria to figure out the values for the depot side auto
+            scoreMineral();
+
             drivetrain.backward(1, 25, 2);
             drivetrain.gyroTurn(.6, 25);
 
@@ -161,7 +205,11 @@ public class MM_Tote_Bot {
 //            moveToLocation(43.5, 18.1, -140, .10, 5);
 //            drivetrain.forward(1, 10, 2);
         } else {
-            scoreCenterMineral();
+//            scoreCenterMineral();
+            moveToLocation(0,0,0,0,0); // TODO use testoria to figure out the values for the depot side auto
+            scoreMineral();
+            drivetrain.backward(1, 25, 2);
+
             drivetrain.backward(1, 27, 2);
             drivetrain.gyroTurn(.6, 23);
         }
@@ -269,11 +317,18 @@ public class MM_Tote_Bot {
             opMode.telemetry.update();
         }
     }
-    public void leaveLander() {
+    public void craterLeaveLander() {
         //.brakesOn();
         drivetrain.backward(1, 5, 2); // back up to release from lander latch
         drivetrain.strafeRight(1, 14, 3);
         drivetrain.gyroTurn(.6, 104);  // face the target
+    }
+
+    public void depotLeaveLander() {
+        //.brakesOn();
+        drivetrain.backward(1, 5, 2); // back up to release from lander latch
+        drivetrain.strafeRight(1, 14, 3);
+        drivetrain.gyroTurn(.6, 76);  // face the target
     }
 
     public void tempLeaveLander() {

@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class MM_Arm {
     private DcMotor slide = null;
@@ -27,5 +29,8 @@ public class MM_Arm {
         slide.setTargetPosition(ARM_POSITION);
         slide.setPower(speed);
         while (opMode.opModeIsActive() && slide.isBusy());
+    }
+    public void turnOnArm(double power){
+        slide.setPower(power);
     }
 }

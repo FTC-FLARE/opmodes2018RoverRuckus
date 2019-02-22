@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.Range;
 public class K_TeleOp extends LinearOpMode {
     DigitalChannel touchSensor;
     DigitalChannel magneticSensor;
+    DigitalChannel touch_collector;
 
     private DcMotor frontLeftMotor = null;
     private DcMotor backLeftMotor = null;
@@ -65,7 +66,6 @@ public class K_TeleOp extends LinearOpMode {
             telemetry.update();
         }
     }
-
     private void controlDrivetrain() {
         double frontLeftPower;
         double frontRightPower;
@@ -100,6 +100,7 @@ public class K_TeleOp extends LinearOpMode {
         backLeftMotor.setPower(backLeftPower);
         backRightMotor.setPower(backRightPower);
     }
+
     private void collectorControl() {
         double collectorPower;
 
@@ -122,11 +123,21 @@ public class K_TeleOp extends LinearOpMode {
         int elbowCurrent = elbowMotor.getCurrentPosition();
         double elbowPower = -gamepad2.right_stick_y;
 
-        if (elbowCurrent >= -1000 && (elbowPower < 0) || elbowCurrent <= 5500 && (elbowPower > 0)) {
+        if (gamepad2.dpad_down) {
+            if (isTriggered(touch_collector)){
+                elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                elbowTarget = 0;
+            }
+            else {
+                elbowTarget = elbowMotor.getCurrentPosition() - (int) (ELBOW_INCREMENT);
+            }
+
+        }
+        else if (elbowCurrent >= -1000 && (elbowPower < 0) || elbowCurrent <= 5500 && (elbowPower > 0)) {
             elbowTarget = elbowMotor.getCurrentPosition() + (int)(elbowPower * ELBOW_INCREMENT);
             telemetry.addData("Elbow - Moving", (int)(elbowPower * ELBOW_INCREMENT));
-
-        }else {
+        }
+        else {
             elbowTarget = elbowMotor.getCurrentPosition();
             telemetry.addLine("Elbow - Stop");
         }
@@ -225,6 +236,10 @@ public class K_TeleOp extends LinearOpMode {
 
         touchSensor = hardwareMap.get(DigitalChannel.class, "touchSensor");
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
+
+        touch_collector = hardwareMap.get(DigitalChannel.class, "touch_collector");
+        touch_collector.setMode(DigitalChannel.Mode.INPUT);
+
         magneticSensor = hardwareMap.get(DigitalChannel.class, "magneticSensor");
         magneticSensor.setMode(DigitalChannel.Mode.INPUT);
 
