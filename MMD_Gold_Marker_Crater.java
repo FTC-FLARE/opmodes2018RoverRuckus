@@ -27,7 +27,7 @@ public class MMD_Gold_Marker_Crater extends LinearOpMode {
        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
         robot.depotLeaveLander();
         robot.findAndMoveToPic();
-        robot.driveAndDumpTeamMarker();
+        robot.driveAndDumpTeamMarker(goldMineralLocation);
         robot.sampleDepotMineral(goldMineralLocation);
         robot.turnOnArmForAutoAndCollect(1);
     }

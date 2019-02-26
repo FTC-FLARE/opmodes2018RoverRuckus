@@ -93,7 +93,8 @@ public class MM_Tote_Bot {
             drivetrain.forward(1, 64, 5);
         }
         else if (goldMineralLocation.equals("Left")){
-            drivetrain.gyroTurn(.75, -2);
+            drivetrain.forward(1, 3, 5);
+            drivetrain.gyroTurn(.75, 2);
             drivetrain.backward(1, 27, 6);
             scoreMineral();
 
@@ -121,7 +122,7 @@ public class MM_Tote_Bot {
             strafeRightTillTarget(5);  // capture Vuforia data
             moveToLocation(57.5, 0, 90, .01, 10);
             drivetrain.gyroTurn(.7, -85);
-            drivetrain.strafeLeft(1, 4, 4);
+            drivetrain.strafeLeft(1, 6, 4);
             drivetrain.forward(1, 20, 15);
         }
         else if (goldMineralLocation.equals("Center")) {
@@ -133,7 +134,7 @@ public class MM_Tote_Bot {
             drivetrain.forward(1, 64, 5);
         }
         else if (goldMineralLocation.equals("Left")){
-            drivetrain.gyroTurn(.75, -2);
+            drivetrain.gyroTurn(.75, 2);
             drivetrain.backward(1, 27, 6);
             scoreMineral();
 
@@ -176,12 +177,17 @@ public class MM_Tote_Bot {
     public void findAndMoveToPic() {
         strafeRightTillTarget(3);
         moveToLocation(56.0, 3.0, 88, .0085, 7);  // line up at pictograph
+        drivetrain.gyroTurn(.6, 90);
         drivetrain.strafeRight(.8, 5, 4);
     }
 
-    public void driveAndDumpTeamMarker(){
-        drivetrain.forward(1, 45, 10); // drive to depot
-        deployTeamMarker();
+    public void driveAndDumpTeamMarker(String goldMineralLocation){
+        if (goldMineralLocation.equals("Left"))
+            drivetrain.forward(1, 48, 5);
+        else{
+            drivetrain.forward(1, 45, 10); // drive to depot
+            deployTeamMarker();
+        }
     }
     public void backUpToCrater(){
         drivetrain.gyroTurn(.7, -95);
@@ -349,7 +355,9 @@ public class MM_Tote_Bot {
         while(opMode.opModeIsActive() && runtime.seconds() < 1.5){
             arm.turnOnArm(power);
         }
-        collector.setCollector(-1);
+        while(opMode.opModeIsActive() && runtime.seconds() < 3){
+            collector.setCollector(-1);
+        }
     }
 
 }

@@ -29,7 +29,7 @@ public class MMC_2Gold_Marker extends LinearOpMode {
 //        goldMineralLocation = "Left";
         robot.sampleMineralCrater(goldMineralLocation);   // use goldMineralLocation to knock off gold mineral
         robot.findAndMoveToPic();   // use vuforia to line up to picture parallel to wall
-        robot.driveAndDumpTeamMarker();
+        robot.driveAndDumpTeamMarker(goldMineralLocation);
         robot.sampleDoubleMineral(goldMineralLocation);
     }
 }

@@ -28,7 +28,7 @@ public class MMC_Gold_Marker_Crater extends LinearOpMode {
         robot.craterLeaveLander();
         robot.sampleMineralCrater(goldMineralLocation);   // use goldMineralLocation to knock off gold mineral
         robot.findAndMoveToPic();   // use vuforia to line up to picture parallel to wall
-        robot.driveAndDumpTeamMarker();
+        robot.driveAndDumpTeamMarker(goldMineralLocation);
         robot.backUpToCrater();
         robot.turnOnArmForAutoAndCollect(-1);
 
