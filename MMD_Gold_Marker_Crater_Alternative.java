@@ -4,9 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name = "Depot Gold Marker", group = "MM")
+@Autonomous(name = "Depot Gold Marker Alternative", group = "MM")
 //@Disabled
-public class MMD_Gold_Marker_Crater extends LinearOpMode {
+public class MMD_Gold_Marker_Crater_Alternative extends LinearOpMode {
     private MM_Tote_Bot robot = new MM_Tote_Bot(this);
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -23,12 +23,11 @@ public class MMD_Gold_Marker_Crater extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-
        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
-        robot.depotLeaveLander("regular");
-        robot.findAndMoveToPic();
+        robot.depotLeaveLander("alternative");
+        robot.findAndMoveToAltPic();
         robot.driveAndDumpTeamMarker(goldMineralLocation);
-        robot.sampleDepotMineral(goldMineralLocation);
-        robot.turnOnArmForAutoAndCollect(1);
+        robot.sampleAltDepotMineral(goldMineralLocation);
+        robot.goToOpponentCrater(goldMineralLocation);
     }
 }
