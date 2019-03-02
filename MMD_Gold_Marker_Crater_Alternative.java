@@ -25,9 +25,30 @@ public class MMD_Gold_Marker_Crater_Alternative extends LinearOpMode {
         waitForStart();
        goldMineralLocation = robot.deployAndDetect(); // Detect gold location while lowering from lander
         robot.depotLeaveLander("alternative");
-        robot.findAndMoveToAltPic();
+
+        if (!goldMineralLocation.equals("Right")) {
+            leftAndCenter();
+        }
+        else{
+            right();
+        }
+    }
+
+    public void leftAndCenter(){
+            robot.findAndMoveToAltPic(30); //drives entered amount of inches
+            robot.driveAndDumpTeamMarker(goldMineralLocation);
+            robot.sampleAltDepotMineral(goldMineralLocation);
+            robot.goToOpponentCrater(goldMineralLocation);
+    }
+    public void right(){
+        robot.drivetrain.gyroTurn(.6,98);
+        robot.drivetrain.backward(1, 15, 5);
+        robot.scoreMineral();
+        robot.drivetrain.forward(1, 15, 5);
+        robot.drivetrain.gyroTurn(.6,116);
+        robot.findAndMoveToAltPic(30); //drives entered amount of inches
         robot.driveAndDumpTeamMarker(goldMineralLocation);
-        robot.sampleAltDepotMineral(goldMineralLocation);
         robot.goToOpponentCrater(goldMineralLocation);
+
     }
 }

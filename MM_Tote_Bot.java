@@ -76,7 +76,7 @@ public class MM_Tote_Bot {
             drivetrain.gyroTurn(.6, 54);
             drivetrain.backward(1, 11.5, 6);
             scoreMineral();
-            drivetrain.strafeRight(1,6,6);
+            drivetrain.strafeRight(1,8,6);
             drivetrain.backward(1,22, 6);
             strafeRightTillTarget(5);  // capture Vuforia data
             moveToLocation(57.5, 0, 90, .01, 10);
@@ -117,7 +117,7 @@ public class MM_Tote_Bot {
             drivetrain.gyroTurn(.6, 54);
             drivetrain.backward(1, 11.5, 6);
             scoreMineral();
-            drivetrain.strafeRight(1,6,6);
+            drivetrain.strafeRight(1,8,6);
             drivetrain.backward(1,22, 6);
             strafeRightTillTarget(5);  // capture Vuforia data
             moveToLocation(57.5, 0, 90, .01, 10);
@@ -197,8 +197,8 @@ public class MM_Tote_Bot {
         drivetrain.strafeRight(.8, 5, 4);
     }
 
-    public void findAndMoveToAltPic() {
-        drivetrain.strafeRight(1, 30, 5);
+    public void findAndMoveToAltPic(double inches) {
+        drivetrain.strafeRight(1, inches, 5);
         drivetrain.gyroTurn(.6, 100);
         strafeRightTillTarget(5);
         moveToLocation(54, 3, 90, .0085, 7);
@@ -223,6 +223,7 @@ public class MM_Tote_Bot {
             drivetrain.backward(1, 70, 10);
         }
         else if (goldMineralLocation.equals("Right")){
+            drivetrain.backward(1, 68, 10);
         }
         else {
             drivetrain.forward(1, 13, 5);
