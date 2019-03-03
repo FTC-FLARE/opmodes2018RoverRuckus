@@ -88,9 +88,9 @@ public class MM_Tote_Bot {
             drivetrain.gyroTurn(.6, 20);
             drivetrain.backward(1, 20, 6);
             drivetrain.forward(1, 21 , 6);
-            drivetrain.gyroTurn(.7, -85);
-            drivetrain.strafeLeft(1, 4, 6);
-            drivetrain.forward(1, 64, 5);
+            drivetrain.gyroTurn(.7, 90);
+            drivetrain.strafeRight(1, 4, 6);
+            drivetrain.backward(1, 64, 5);
         }
         else if (goldMineralLocation.equals("Left")){
             drivetrain.forward(1, 3, 5);
@@ -100,9 +100,9 @@ public class MM_Tote_Bot {
 
             // drving to our crater
             drivetrain.forward(1, 28.5, 6);
-            drivetrain.gyroTurn(.75, -85);
-            drivetrain.strafeLeft(1,3,6);
-            drivetrain.forward(1, 64, 7);
+            drivetrain.gyroTurn(.75, 90);
+            drivetrain.strafeRight(1,3,6);
+            drivetrain.backward(1, 64, 7);
 
             // Driving to opponent crater
 //            drivetrain.gyroTurn(.6, 0);

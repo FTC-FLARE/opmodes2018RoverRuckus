@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.Range;
 public class K_TeleOp extends LinearOpMode {
     DigitalChannel touchSensor;
     DigitalChannel magneticSensor;
-    DigitalChannel touch_collector;
+    DigitalChannel magnetic_elbow;
 
     private DcMotor frontLeftMotor = null;
     private DcMotor backLeftMotor = null;
@@ -23,8 +23,7 @@ public class K_TeleOp extends LinearOpMode {
     private DcMotor elbowMotor = null;
     private DcMotor sliderMotor = null;
 
-    DigitalChannel liftMagnetBottom;
-    DigitalChannel liftMagnetTop;
+    DigitalChannel liftMagnet;
 
     private DcMotor liftMotor = null;
 
@@ -119,14 +118,14 @@ public class K_TeleOp extends LinearOpMode {
     }
 
     private void elbowControl() {
-        int elbowTarget;
+        int elbowTarget = 0;
         int elbowCurrent = elbowMotor.getCurrentPosition();
         double elbowPower = -gamepad2.right_stick_y;
 
         if (gamepad2.dpad_down) {
-            if (isTriggered(touch_collector)){
+            if (isTriggered(magnetic_elbow)){
                 elbowMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                elbowTarget = 0;
+                elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             else {
                 elbowTarget = elbowMotor.getCurrentPosition() - (int) (ELBOW_INCREMENT);
@@ -146,6 +145,7 @@ public class K_TeleOp extends LinearOpMode {
         elbowMotor.setPower(1);
 
         telemetry.addData("      - Target", elbowTarget);
+        telemetry.addData("Magnet true or false", isTriggered(magnetic_elbow));
         telemetry.addData("      - Current", elbowMotor.getCurrentPosition());
         telemetry.addData("      - Power",elbowPower);
     }
@@ -175,18 +175,20 @@ public class K_TeleOp extends LinearOpMode {
         boolean liftUp = gamepad2.right_bumper;
         boolean liftDown = gamepad2.left_bumper;
 
-        if (liftUp && !isTriggered(liftMagnetTop)) {
+        if (liftUp && !isTriggered(liftMagnet)) {
             liftMotor.setPower(1);
             telemetry.addData("Raise lift", liftMotor.getCurrentPosition());
-        } else if (liftDown && !isTriggered(liftMagnetBottom)) {
+        }
+
+        else if (liftDown) {
             liftMotor.setPower(-1);
-            telemetry.addData("Lower lift", liftMotor.getCurrentPosition());
-        } else {
+        }
+
+        else {
             liftMotor.setPower(0);
             telemetry.addData("Stop lift", liftMotor.getCurrentPosition());
         }
-        telemetry.addData("Magnet Bottom",!liftMagnetBottom.getState());
-        telemetry.addData("Magnet Top", !liftMagnetTop.getState());
+        telemetry.addData("Magnet Top", !liftMagnet.getState());
     }
 
     public boolean isTriggered (DigitalChannel Sensor) {
@@ -237,8 +239,8 @@ public class K_TeleOp extends LinearOpMode {
         touchSensor = hardwareMap.get(DigitalChannel.class, "touchSensor");
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
 
-        touch_collector = hardwareMap.get(DigitalChannel.class, "touch_collector");
-        touch_collector.setMode(DigitalChannel.Mode.INPUT);
+        magnetic_elbow = hardwareMap.get(DigitalChannel.class, "magneticElbow");
+        magnetic_elbow.setMode(DigitalChannel.Mode.INPUT);
 
         magneticSensor = hardwareMap.get(DigitalChannel.class, "magneticSensor");
         magneticSensor.setMode(DigitalChannel.Mode.INPUT);
@@ -258,10 +260,8 @@ public class K_TeleOp extends LinearOpMode {
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor.setTargetPosition(0);
 
-        liftMagnetBottom = hardwareMap.get(DigitalChannel.class, "liftMagnetBottom");
-        liftMagnetBottom.setMode(DigitalChannel.Mode.INPUT);
-        liftMagnetTop = hardwareMap.get(DigitalChannel.class, "liftMagnetTop");
-        liftMagnetTop.setMode(DigitalChannel.Mode.INPUT);
+        liftMagnet = hardwareMap.get(DigitalChannel.class, "liftMagnet");
+        liftMagnet.setMode(DigitalChannel.Mode.INPUT);
 
         phoneTilt = hardwareMap.get(Servo.class, "phoneTilt");
     }

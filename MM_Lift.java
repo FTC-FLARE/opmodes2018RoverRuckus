@@ -9,8 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 public class MM_Lift {
     private DcMotor lift = null;
     private MM_Tensorflow tensorflow = null;
-    private DigitalChannel liftMagnetBottom;
-    private DigitalChannel liftMagnetTop;
+    private DigitalChannel liftMagnet;
 
     public static final int LIFT_TOTAL_TICKS = 7550;
 
@@ -25,10 +24,8 @@ public class MM_Lift {
         lift.setDirection(DcMotor.Direction.REVERSE);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        liftMagnetBottom = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnetBottom");
-        liftMagnetBottom.setMode(DigitalChannel.Mode.INPUT);
-        liftMagnetTop = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnetTop");
-        liftMagnetTop.setMode(DigitalChannel.Mode.INPUT);
+        liftMagnet = opMode.hardwareMap.get(DigitalChannel.class, "liftMagnet");
+        liftMagnet.setMode(DigitalChannel.Mode.INPUT);
 
         tensorflow = new MM_Tensorflow(opMode, vuforia);
     }
@@ -36,7 +33,7 @@ public class MM_Lift {
         tensorflow.activateTfod();
         lift.setPower(1);
 
-        while (opMode.opModeIsActive() && (!isTriggered(liftMagnetTop) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
+        while (opMode.opModeIsActive() && (!isTriggered(liftMagnet) && lift.getCurrentPosition() < LIFT_TOTAL_TICKS)) {
 
             opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
 
