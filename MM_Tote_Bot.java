@@ -51,7 +51,8 @@ public class MM_Tote_Bot {
         phoneTilt.setPosition(PHONE_DOWN);
     }
 
-    public void hitterIn() {
+    public void
+    hitterIn() {
         mineralHitter.setPosition(HITTER_IN);
     }
     public void hitterOut() {
@@ -81,7 +82,7 @@ public class MM_Tote_Bot {
             strafeRightTillTarget(5);  // capture Vuforia data
             moveToLocation(57.5, 0, 90, .01, 10);
             //drivetrain.gyroTurn(.7, 93);
-            drivetrain.strafeRight(1, 3, 4);
+            drivetrain.strafeRight(1, 6, 4);
             drivetrain.backward(1, 20, 15);
         }
         else if (goldMineralLocation.equals("Center")) {
@@ -93,7 +94,7 @@ public class MM_Tote_Bot {
             drivetrain.backward(1, 64, 5);
         }
         else if (goldMineralLocation.equals("Left")){
-            drivetrain.forward(1, 3, 5);
+            drivetrain.forward(1, 1, 5);
             drivetrain.gyroTurn(.75, 2);
             drivetrain.backward(1, 27, 6);
             scoreMineral();
