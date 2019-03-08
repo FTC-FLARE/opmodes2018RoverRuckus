@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
@@ -22,6 +23,7 @@ public class K_TeleOp extends LinearOpMode {
     private DcMotor collectorMotor = null;
     private DcMotor elbowMotor = null;
     private DcMotor sliderMotor = null;
+    private Servo mineralHitter;
 
     DigitalChannel liftMagnet;
 
@@ -42,6 +44,9 @@ public class K_TeleOp extends LinearOpMode {
     private LinearOpMode opMode;
     private Servo phoneTilt = null;
 
+    static final double HITTER_IN = .85;
+    static final double HITTER_OUT = .25;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -61,6 +66,7 @@ public class K_TeleOp extends LinearOpMode {
             elbowControl();
             slideControl();
             liftControl();
+            hitterIn();
 
             telemetry.update();
         }
@@ -132,7 +138,7 @@ public class K_TeleOp extends LinearOpMode {
             }
 
         }
-        else if (elbowCurrent >= -1000 && (elbowPower < 0) || elbowCurrent <= 5500 && (elbowPower > 0)) {
+        else if (elbowCurrent >= -1000 && (elbowPower < 0) || elbowCurrent <= 6000 && (elbowPower > 0)) {
             elbowTarget = elbowMotor.getCurrentPosition() + (int)(elbowPower * ELBOW_INCREMENT);
             telemetry.addData("Elbow - Moving", (int)(elbowPower * ELBOW_INCREMENT));
         }
@@ -205,6 +211,7 @@ public class K_TeleOp extends LinearOpMode {
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.FORWARD);
 
+
 //        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -218,6 +225,7 @@ public class K_TeleOp extends LinearOpMode {
     private void getToolHardware() {
         collectorMotor = hardwareMap.get(DcMotor.class, "collector");
         collectorMotor.setDirection(DcMotor.Direction.FORWARD);
+
 
         elbowMotor = hardwareMap.get(DcMotor.class, "elbow");
         elbowMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -264,8 +272,13 @@ public class K_TeleOp extends LinearOpMode {
         liftMagnet.setMode(DigitalChannel.Mode.INPUT);
 
         phoneTilt = hardwareMap.get(Servo.class, "phoneTilt");
+        mineralHitter = hardwareMap.get(Servo.class, "mineralHitter");
+
     }
     public void movePhoneUp () {
         phoneTilt.setPosition(PHONE_UP);
+    }
+    public void hitterIn() {
+        mineralHitter.setPosition(HITTER_IN);
     }
 }
