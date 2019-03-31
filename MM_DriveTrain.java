@@ -20,7 +20,7 @@ public class MM_DriveTrain {
     private DcMotor blMotor = null;
     private DcMotor brMotor = null;
 
-    static final double COUNTS_PER_MOTOR_REV = 1120;    // 40:1
+    static final double COUNTS_PER_MOTOR_REV = 723.24;    // Gobilda 25.83:1
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
@@ -221,10 +221,10 @@ public class MM_DriveTrain {
     }
 
     public void moveRobot() {
-        flMotor.setPower(setMinPower(frontLeftPowerForVuforia * 0.6));
-        frMotor.setPower(setMinPower(frontRightPowerForVuforia * 0.6));
-        blMotor.setPower(setMinPower(backLeftPowerForVuforia * 0.6));
-        brMotor.setPower(setMinPower(backRightPowerForVuforia * 0.6));
+        flMotor.setPower(setMinPower(frontLeftPowerForVuforia * 0.3));
+        frMotor.setPower(setMinPower(frontRightPowerForVuforia * 0.3));
+        blMotor.setPower(setMinPower(backLeftPowerForVuforia * 0.3));
+        brMotor.setPower(setMinPower(backRightPowerForVuforia * 0.3));
 
         opMode.telemetry.addData("Wheels", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", frontLeftPowerForVuforia, frontRightPowerForVuforia, backLeftPowerForVuforia, backRightPowerForVuforia);
     }
