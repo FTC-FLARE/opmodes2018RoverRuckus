@@ -30,7 +30,8 @@ public class K_TeleOp extends LinearOpMode {
     private DcMotor liftMotor = null;
 
     static final int SLIDE_INCREMENT = 250;
-    static final int ELBOW_INCREMENT = 2000;
+    static final int ELBOW_INCREMENT = 500;
+    static final int ELBOW_SLOW_INCREMENT = 150;
     static final double COUNTS_PER_MOTOR_REV = (560 * 3);
     static final double ELBOW_GEAR_RATIO = 26/1;
     static final double MAX_ELBOW_FORWARD = (ELBOW_GEAR_RATIO *(COUNTS_PER_MOTOR_REV * .75));
@@ -127,6 +128,10 @@ public class K_TeleOp extends LinearOpMode {
         int elbowTarget = 0;
         int elbowCurrent = elbowMotor.getCurrentPosition();
         double elbowPower = -gamepad2.right_stick_y;
+        int elbowIncrement = ELBOW_INCREMENT;
+        if ((elbowCurrent > 3000 && elbowPower > 0) || (elbowCurrent < 1500 && elbowPower < 0)){
+            elbowIncrement = ELBOW_SLOW_INCREMENT;
+        }
 
         if (gamepad2.dpad_down) {
             if (isTriggered(magnetic_elbow)){
@@ -134,13 +139,13 @@ public class K_TeleOp extends LinearOpMode {
                 elbowMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             else {
-                elbowTarget = elbowMotor.getCurrentPosition() - (int) (ELBOW_INCREMENT);
+                elbowTarget = elbowMotor.getCurrentPosition() - (int) (elbowIncrement);
             }
 
         }
-        else if (elbowCurrent >= -1000 && (elbowPower < 0) || elbowCurrent <= 6000 && (elbowPower > 0)) {
-            elbowTarget = elbowMotor.getCurrentPosition() + (int)(elbowPower * ELBOW_INCREMENT);
-            telemetry.addData("Elbow - Moving", (int)(elbowPower * ELBOW_INCREMENT));
+        else if (elbowCurrent >= 0 && (elbowPower < 0) || elbowCurrent <= 6000 && (elbowPower > 0)) {
+            elbowTarget = elbowMotor.getCurrentPosition() + (int)(elbowPower * elbowIncrement);
+            telemetry.addData("Elbow - Moving", (int)(elbowPower * elbowIncrement));
         }
         else {
             elbowTarget = elbowMotor.getCurrentPosition();
