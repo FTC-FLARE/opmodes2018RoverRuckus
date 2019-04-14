@@ -41,6 +41,7 @@ public class K_TeleOp extends LinearOpMode {
     int lastSlideTarget = 0;
     private boolean driveSlow = true;
     private boolean isButtonAHandled = false;
+    private boolean spitMineralRange = false;
 
     private LinearOpMode opMode;
     private Servo phoneTilt = null;
@@ -85,11 +86,11 @@ public class K_TeleOp extends LinearOpMode {
         frontLeftPower = Range.clip(drive + strafe + turn, -1.0, 1.0);
         frontRightPower = Range.clip(drive - strafe - turn, -1.0, 1.0);
         backLeftPower = Range.clip(drive - strafe + turn, -1.0, 1.0);
-        backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
+            backRightPower = Range.clip(drive + strafe - turn, -1.0, 1.0);
 
-        if (gamepad1.a && !isButtonAHandled) {
-            driveSlow = !driveSlow;
-            isButtonAHandled = true;
+            if (gamepad1.a && !isButtonAHandled) {
+                driveSlow = !driveSlow;
+                isButtonAHandled = true;
         } else if (!gamepad1.a) {
             isButtonAHandled = false;
         }
@@ -117,9 +118,15 @@ public class K_TeleOp extends LinearOpMode {
             collectorPower = 1;
         } else if (collectorBackwards) {
             collectorPower = -1;
-        } else {
+        }
+        else if (spitMineralRange){
+            collectorPower = 1;
+        }
+        else {
             collectorPower = 0;
         }
+
+
 
         collectorMotor.setPower(collectorPower);
     }
@@ -146,6 +153,12 @@ public class K_TeleOp extends LinearOpMode {
         else if (elbowCurrent >= 0 && (elbowPower < 0) || elbowCurrent <= 6000 && (elbowPower > 0)) {
             elbowTarget = elbowMotor.getCurrentPosition() + (int)(elbowPower * elbowIncrement);
             telemetry.addData("Elbow - Moving", (int)(elbowPower * elbowIncrement));
+            if (elbowPower > 0 && elbowCurrent > 700 && elbowCurrent < 1800){
+                spitMineralRange = true;
+            }
+            else {
+                spitMineralRange = false;
+            }
         }
         else {
             elbowTarget = elbowMotor.getCurrentPosition();
