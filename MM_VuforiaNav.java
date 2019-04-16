@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -30,7 +29,8 @@ public class MM_VuforiaNav {
     private LinearOpMode opMode;
 
     private static final float mmPerInch = 25.4f;
-    private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
+//    public static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // @ 1829mm - the width of the FTC field (from the center point to the outer panels)
+    public static final float mmFTCFieldWidth = 71 * mmPerInch;       // @1803mm field is only 11ft 10in
     private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
 
     //ToDo may want to change thse?
@@ -39,9 +39,9 @@ public class MM_VuforiaNav {
     static final double SLOW_DOWN_FACTOR = .0017;
     private static final double DRIVE_POWER = 1;
 
-    final int CAMERA_FORWARD_DISPLACEMENT = 0;   // Camera is 0 mm in front of robot center
+    final int CAMERA_FORWARD_DISPLACEMENT = 80;   // Camera is 0 mm in front of robot center
     final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // Camera is 200 mm above ground
-    final int CAMERA_LEFT_DISPLACEMENT = -203;     // Camera is on robot's right side
+    final int CAMERA_LEFT_DISPLACEMENT = -180;     // Camera is on robot's right side
 
     private MM_DriveTrain driveTrain;        // Access to the Robot hardware
     private VuforiaTrackables targetsRoverRuckus;        // List of active targetsRoverRuckus
@@ -53,6 +53,10 @@ public class MM_VuforiaNav {
     private double robotBearing;   // Robot's rotation around the Z axis (CCW is positive)
     private double gyroBearing;  // gyro heading
     private double goalRange;
+    private double rangeX;  // x displacement based on range sensors
+    private double rangeY;  // y displacement based on range sensors
+    private String vuforiaOrRangeX;  // which sensor are we using to get the X value?
+    private String vuforiaOrRangeY;
 
     private double goalX;
     private double goalY;
@@ -70,7 +74,7 @@ public class MM_VuforiaNav {
         activateTracking();
 
         targetFound = -1;
-        targetName = null;
+        targetName = "*****";
 
         robotX = 0;
         robotY = 0;
@@ -86,6 +90,14 @@ public class MM_VuforiaNav {
             VuforiaTrackableDefaultListener listener = (VuforiaTrackableDefaultListener) target.getListener();
             OpenGLMatrix location = null;
 
+            robotX = Integer.MAX_VALUE;
+            robotY = Integer.MAX_VALUE;
+            robotBearing = Integer.MAX_VALUE;
+
+            gyroBearing = driveTrain.getCurrentHeading();
+            rangeX = driveTrain.getrangeX(gyroBearing);  // get distance in x direction from range sensor
+            rangeY = driveTrain.getrangeY(gyroBearing);  // get distance in y direction from range sensor
+
             if ((target != null) && (listener != null) && listener.isVisible()) {
                 targetName = target.getName();
 
@@ -97,9 +109,7 @@ public class MM_VuforiaNav {
 
                     robotX = trans.get(0);
                     robotY = trans.get(1);
-
                     robotBearing = rot.thirdAngle;
-                    gyroBearing = driveTrain.getCurrentHeading();
                 }
                 targetFound = targetNumber;
                 break;
@@ -114,15 +124,30 @@ public class MM_VuforiaNav {
         this.goalX = goalX * mmPerInch;
         this.goalY = goalY * mmPerInch;
         this.goalBearing = goalBearing;
-        errorX = this.goalX - robotX;
-        errorY = this.goalY - robotY;
+
+        double usableX = robotX;  //ToDo rename robotX to vuforiaX?
+        double usableY = robotY;
+        vuforiaOrRangeX = "Vuforia";
+        vuforiaOrRangeY = "Vuforia";
+
+        double targetRange = Math.hypot(mmFTCFieldWidth - robotX, - robotY);
+
+//        if (Math.abs(goalX - rangeX) < Math.abs(goalX - robotX) || targetRange > 30 * mmPerInch){
+        if (targetRange > 30 * mmPerInch){
+            usableX = rangeX;
+            vuforiaOrRangeX = "Range";
+        }
+//        if (Math.abs(goalY - rangeY) < Math.abs(goalY - robotY) || targetRange > 30 * mmPerInch){
+        if (targetRange > 30 * mmPerInch){
+            usableY = rangeY;
+            vuforiaOrRangeY = "Range";
+        }
+
+        errorX = this.goalX - usableX;
+        errorY = this.goalY - usableY;
 
         goalRange = Math.hypot(errorX, errorY);
 
-//        if (Math.abs(goalRange) < DISTANCE_TOLERANCE) {
-//            errorX = 0;
-//            errorY = 0;
-//        }
         driveAngle = Math.toDegrees(Math.atan(errorY/errorX));
 
         if (Math.abs(errorX) < DISTANCE_TOLERANCE) {
@@ -139,11 +164,6 @@ public class MM_VuforiaNav {
         if (Math.abs(errorBearing) <= ANGLE_TOLERANCE) {
             errorBearing = 0;
         }
-
-//        if ((errorX != 0 || errorY != 0 || errorBearing != 0) && passedGoal()) { // reverse the goals if we have passed our goal.
-//            reverseGoal();
-//            goalReversed = true;
-//        }
 
         double rotatePower = rotateFactor * errorBearing;
         double theta = driveAngle - gyroBearing + 45;
@@ -193,157 +213,23 @@ public class MM_VuforiaNav {
         return bearing;
     }
 
-    private void reverseGoal() {
-        goalX *= -1;
-        goalY *= -1;
-        driveAngle -= 180;
-        driveAngle = fixAngle(driveAngle);
-    }
-
-    public boolean passedGoal() {
-        if (driveAngle > -90 && driveAngle <= 0) {
-            if (robotX > goalX || robotY < goalY){
-                return true;
-            }
-        }
-        if (driveAngle > 0 && driveAngle <= 90){
-            if (robotX > goalX || robotY > goalY){
-                return true;
-            }
-        }
-        if (driveAngle > 90 && driveAngle <= 180){
-            if (robotX < goalX || robotY > goalY){
-                return true;
-            }
-        }
-        if (driveAngle < -90 || driveAngle >= -180){
-            if (robotX < goalX || robotY < goalY){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean oldCruiseControl(double goalX, double goalY, double goalBearing, double rotateFactor) {
-//    public boolean cruiseControl(double goalX, double goalY, double goalBearing, double driveSpeed, double rotateFactor) {
-        this.goalX = goalX * mmPerInch;
-        this.goalY = goalY * mmPerInch;
-        this.goalBearing = goalBearing;
-        errorX = this.goalX - robotX;
-        errorY = this.goalY - robotY;
-
-        goalRange = Math.hypot(errorX, errorY);
-//        if (Math.abs(goalRange) < DISTANCE_TOLERANCE) {
-//            errorX = 0;
-//            errorY = 0;
-//        }
-
-        if (Math.abs(errorX) < DISTANCE_TOLERANCE) {
-            errorX = 0;
-        }
-
-        if (Math.abs(errorY) < DISTANCE_TOLERANCE) {
-            errorY = 0;
-        }
-
-        errorBearing = this.goalBearing - gyroBearing;
-        errorBearing = fixAngle(errorBearing);
-
-        if (Math.abs(errorBearing) < ANGLE_TOLERANCE) {
-            errorBearing = 0;
-        }
-
-//        double moveAngle = Math.atan2(errorY, errorX);
-//        double cosA = Math.cos(moveAngle - 90);
-//        double sinA = Math.sin(moveAngle - 90);
-
-        double cosA = Math.cos(Math.toRadians(errorBearing - 90));
-        double sinA = Math.sin(Math.toRadians(errorBearing - 90));
-        double x1 = errorX * cosA - errorY * sinA;
-        double y1 = errorX * sinA + errorY * cosA;
-
-//        double x1 = errorX;
-//        double y1 = errorY;
-
-        //  Only control x & y before normalizing
-        double flPower = x1 + y1;
-        double frPower = -x1 + y1;
-        double blPower = -x1 + y1;
-        double brPower = x1 + y1;
-
-        // first normalization to get within a predictable range
-        double max = Math.max(Math.abs(flPower), Math.abs(frPower));
-        max = Math.max(max, Math.abs(blPower));
-        max = Math.max(max, Math.abs(brPower));
-        if (max > 1.0) {
-            flPower /= max;
-            frPower /= max;
-            blPower /= max;
-            brPower /= max;
-        }
-
-        if (errorBearing != 0) { //0 or within tolerance
-            // add rotation
-
-//            double rotatePower = rotateFactor * errorBearing;
-//            flPower -= rotatePower;
-//            frPower += rotatePower;
-//            blPower -= rotatePower;
-//            brPower += rotatePower;
-            flPower -= rotateFactor;
-            frPower += rotateFactor;
-            blPower -= rotateFactor;
-            brPower += rotateFactor;
-
-            // normalize again for changes due to rotation
-            max = Math.max(Math.abs(flPower), Math.abs(frPower));
-            max = Math.max(max, Math.abs(blPower));
-            max = Math.max(max, Math.abs(brPower));
-            if (max > 1.0) {
-                flPower /= max;
-                frPower /= max;
-                blPower /= max;
-                brPower /= max;
-            }
-        }
-
-        double rampFactor = 1;
-        if (goalRange < (8 * mmPerInch)) {   // time to ramp down
-//            rampFactor = (goalRange - (2 * mmPerInch)) / (6 * mmPerInch);
-            rampFactor = goalRange * SLOW_DOWN_FACTOR;
-        }
-
-        driveTrain.setFrontLeftPowerForVuforia(flPower * rampFactor);
-        driveTrain.setFrontRightPowerForVuforia(frPower * rampFactor);
-        driveTrain.setBackLeftPowerForVuforia(blPower * rampFactor);
-        driveTrain.setBackRightPowerForVuforia(brPower * rampFactor);
-
-        return (errorBearing == 0 && errorX == 0 && errorY == 0);
-    }
-
-    public void setGoalToCurrent() {
-        goalX = robotX;
-        goalY = robotY;
-        goalBearing = robotBearing;
-    }
-
     public void navTelemetry() {
-        if (targetFound >= 0) {
+//        if (targetFound >= 0) {
             opMode.telemetry.addData("Visible", targetName);
 
             opMode.telemetry.addData("Angles", "V:Gyro : Goal:Error [%4.0f°]:[%4.0f°] (%4.0f°):(%4.0f°)", robotBearing, gyroBearing, goalBearing, errorBearing);
-            opMode.telemetry.addLine();
+            opMode.telemetry.addData("       ", "using [X]:[Y] %s %s", vuforiaOrRangeX, vuforiaOrRangeY);
             opMode.telemetry.addData("Vuforia", "[X]:[Y] (B) [%5.1fin]:[%5.1fin] (%4.0f°)", robotX / mmPerInch, robotY / mmPerInch, robotBearing);
-            opMode.telemetry.addData("Goal", "[X]:[Y]  (GB)  [%5.1fin]:[%5.1fin]  (%4.0f°)", goalX / mmPerInch, goalY / mmPerInch, goalBearing);
-            opMode.telemetry.addData("Error", "[X]:[Y] (B)  [%5.1fin]:[%5.1fin]  (%4.0f°)", errorX / mmPerInch, errorY / mmPerInch, errorBearing);
+            opMode.telemetry.addData("Range  ", "[X]:[Y]     [%5.1fin]:[%5.1fin]", rangeX / mmPerInch, rangeY / mmPerInch);
+            opMode.telemetry.addData("Goal   ", "[X]:[Y]  (GB)  [%5.1fin]:[%5.1fin]  (%4.0f°)", goalX / mmPerInch, goalY / mmPerInch, goalBearing);
+            opMode.telemetry.addData("Error  ", "[X]:[Y] (B)  [%5.1fin]:[%5.1fin]  (%4.0f°)", errorX / mmPerInch, errorY / mmPerInch, errorBearing);
             opMode.telemetry.addLine();
             opMode.telemetry.addData("DriveAngle", driveAngle);
-            opMode.telemetry.addData("ReversedGoal", goalReversed);
             opMode.telemetry.addData("- Turn    ", "%s %4.0f°", errorBearing == 0 ? "STOP!" : errorBearing < 0 ? ">>> CW " : "<<< CCW", Math.abs(errorBearing));
             opMode.telemetry.addData("- Distance", "%s %5.1fin", goalRange == 0 ? "STOP!" : "move ", goalRange / mmPerInch);
-        } else {
-            opMode.telemetry.addData("Visible", "- - - -");
-        }
+//        } else {
+//            opMode.telemetry.addData("Visible", "- - - -");
+//        }
     }
 
     public void initVuforia() {
@@ -352,6 +238,7 @@ public class MM_VuforiaNav {
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = CAMERA_CHOICE;
+        parameters.useExtendedTracking = false;  //ToDo determine if we want to do this
 
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
@@ -379,10 +266,6 @@ public class MM_VuforiaNav {
                 .translation(mmFTCFieldWidth, 0, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90));
 
-//        OpenGLMatrix targetLocationOnField = OpenGLMatrix
-//                .translation(0, mmFTCFieldWidth, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0));
-
         OpenGLMatrix blueRoverLocationOnField = targetLocationOnField;
         blueRover.setLocation(blueRoverLocationOnField);
         ((VuforiaTrackableDefaultListener) blueRover.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
@@ -407,9 +290,5 @@ public class MM_VuforiaNav {
 
     public VuforiaLocalizer getVuforia() {
         return vuforia;
-    }
-
-    public boolean findTarget() {
-        return false;
     }
 }

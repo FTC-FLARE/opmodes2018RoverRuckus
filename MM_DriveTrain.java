@@ -1,14 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public class MM_DriveTrain {
@@ -20,11 +23,19 @@ public class MM_DriveTrain {
     private DcMotor blMotor = null;
     private DcMotor brMotor = null;
 
+    private Servo rangeServoBack;
+    private Servo rangeServoRight;
+    private ModernRoboticsI2cRangeSensor rangeSensorBack;
+    private ModernRoboticsI2cRangeSensor rangeSensorRight;
+//    private DistanceSensor rangeSensorRight;
+
     static final double COUNTS_PER_MOTOR_REV = 723.24;    // Gobilda 25.83:1
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double MAX_BACK_RANGE_SENSOR_FROM_ROBOT_CENTER = 9.5 * 25.4;  // 9.5 inches * mm per inch
+    static final double MAX_SIDE_RANGE_SENSOR_FROM_ROBOT_CENTER = 9.5 * 25.4;  // 9.5 inches * mm per inch
 
     private ElapsedTime runtime = new ElapsedTime();
     private LinearOpMode opMode;
@@ -135,6 +146,15 @@ public class MM_DriveTrain {
     public void initHardware() {
         stopAndResetEncoders();
         setUsingEncoder();
+
+        rangeServoBack = opMode.hardwareMap.get(Servo.class, "backRangeServo");
+        rangeServoRight = opMode.hardwareMap.get(Servo.class, "sideRangeServo");
+        rangeServoBack.setPosition(.5);
+        rangeServoRight.setPosition(.5);
+
+        rangeSensorBack = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRangeSensor");
+        rangeSensorRight = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sideRangeSensor");
+//        rangeSensorRight = opMode.hardwareMap.get(DistanceSensor.class, "sideRangeSensor");
     }
 
     private void setUsingEncoder() {
@@ -241,6 +261,17 @@ public class MM_DriveTrain {
     public double getCurrentHeading() {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle;
     }
+
+    public double getrangeX(double heading){
+        rangeServoRight.setPosition(1 - heading/180); // subtract from 1 because the servo is mounted upside down
+        return MM_VuforiaNav.mmFTCFieldWidth - (rangeSensorRight.getDistance(DistanceUnit.MM) + MAX_SIDE_RANGE_SENSOR_FROM_ROBOT_CENTER*Math.sin(Math.toRadians(heading - 24)));
+    }
+
+    public double getrangeY(double heading){
+        rangeServoBack.setPosition(heading/180);
+        return -(MM_VuforiaNav.mmFTCFieldWidth - (rangeSensorBack.getDistance(DistanceUnit.MM) + MAX_BACK_RANGE_SENSOR_FROM_ROBOT_CENTER*Math.sin(Math.toRadians(heading - 24))));
+    }
+
     public void setFrontLeftPowerForVuforia(double frontLeftPowerForVuforia) {
         this.frontLeftPowerForVuforia = frontLeftPowerForVuforia;
     }
