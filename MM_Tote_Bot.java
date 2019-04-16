@@ -207,7 +207,7 @@ public class MM_Tote_Bot {
         drivetrain.strafeLeft(1, 7, 4);
     }
     public void driveAndDumpTeamMarker(String goldMineralLocation) {
-            drivetrain.forward(1, 45, 10); // drive to depot
+            drivetrain.gyroDrive(1, 45, 90, 10); // drive to depot
             deployTeamMarker();
     }
     public void goToOpponentCrater(String goldMineralLocation){
@@ -230,7 +230,7 @@ public class MM_Tote_Bot {
     }
     public void returnToCrater(){
         drivetrain.gyroTurn(.4, -90);
-        drivetrain.forward(1, 58, 10);
+        drivetrain.gyroDrive(1, 58, -90, 10);
     }
 
     public void scoreLeftMineral() {

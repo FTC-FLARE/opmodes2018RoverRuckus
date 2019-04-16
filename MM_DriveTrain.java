@@ -48,6 +48,7 @@ public class MM_DriveTrain {
 
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
+    static final double     P_DRIVE_COEFF           = 0.05;     // Larger is more responsive, but also less stable
 
     public MM_DriveTrain(LinearOpMode opMode){
         this.opMode = opMode;
@@ -85,6 +86,64 @@ public class MM_DriveTrain {
             setUsingEncoder();
         }
     }
+
+    public void gyroDrive(double speed, double inches, double angle, double timeoutS) {
+        if (opMode.opModeIsActive()) {
+
+            brakesOn();
+            setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            setNewMotorTarget(inches, inches, inches, inches);
+
+            setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            runtime.reset();
+            setMotorPowerSame(speed);
+
+            double error = 0;
+            double steer = 0;
+            double frontLeftPower = speed;
+            double frontRightPower = speed;
+            double backLeftPower = speed;
+            double backRightPower = speed;
+
+
+            while (opMode.opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (flMotor.isBusy() && frMotor.isBusy() && blMotor.isBusy() && brMotor.isBusy())) {
+                // adjust relative speed based on heading error.
+                error = getError(angle);
+                steer = getSteer(error, P_DRIVE_COEFF);
+
+                // if driving in reverse, the motor correction also needs to be reversed
+                if (inches < 0)
+                    steer *= -1.0;
+
+                frontLeftPower = speed - steer;
+                backLeftPower = speed - steer;
+                frontRightPower = speed + steer;
+                backRightPower = speed + steer;
+
+                double max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
+                max = Math.max(max, Math.abs(backLeftPower));
+                max = Math.max(max, Math.abs(backRightPower));
+                if (max > 1.0) {
+                    frontLeftPower /= max;
+                    frontRightPower /= max;
+                    backLeftPower /= max;
+                    backRightPower /= max;
+                }
+
+                setMotorPowers(frontLeftPower, frontRightPower, backLeftPower, backRightPower);
+                opMode.telemetry.addData("Gyro (%4.0f°)", getCurrentHeading());
+                encoderTelemetry();
+
+            }
+
+            setMotorPowerSame(0);
+            setUsingEncoder();
+        }
+    }
+
     public void forward(double speed, double inches, double timeOutS){
         encoderDrive(speed, inches, inches, inches, inches, timeOutS);
     }
