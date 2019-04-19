@@ -90,7 +90,7 @@ public class MM_DriveTrain {
     public void gyroDrive(double speed, double inches, double angle, double timeoutS) {
         if (opMode.opModeIsActive()) {
 
-            brakesOn();
+//            brakesOn();
             setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             setNewMotorTarget(inches, inches, inches, inches);
 

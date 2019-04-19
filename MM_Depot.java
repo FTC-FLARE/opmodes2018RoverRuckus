@@ -47,6 +47,7 @@ public class MM_Depot extends LinearOpMode {
         robot.depotFindAndMoveToPic();
 
         robot.depotDriveAndDumpTeamMarker(goldMineralLocation);
-        robot.drivetrain.gyroDrive(1, 61, 90, 10); // drive to opponent crater
+        robot.drivetrain.strafeRight(1, 7, 4);
+        robot.drivetrain.gyroDrive(.75, 61, 90, 10); // drive to opponent crater
         }
 }

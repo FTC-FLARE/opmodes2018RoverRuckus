@@ -17,7 +17,7 @@ public class MM_Tote_Bot {
     private LinearOpMode opMode;
     private ElapsedTime runtime = new ElapsedTime();
 
-    static final double PHONE_DOWN = .74;
+    static final double PHONE_DOWN = .72;
     static final double PHONE_UP = .82;
 
     static final double HITTER_IN = .85;
@@ -126,7 +126,7 @@ public class MM_Tote_Bot {
 
     public void findAndMoveToPic() {
 //        strafeRightTillTarget(3);
-        moveToLocation(56.0, 0, 88, .0085, 7);  // line up at pictograph
+        moveToLocation(56.0, 0, 90, .0085, 7);  // line up at pictograph
         drivetrain.gyroTurn(.6, 90);
         drivetrain.strafeRight(.8, 5, 4);
     }
@@ -137,18 +137,18 @@ public class MM_Tote_Bot {
         drivetrain.strafeLeft(1, 7, 4);
     }
     public void driveAndDumpTeamMarker(String goldMineralLocation) {
-            drivetrain.gyroDrive(1, 45, 90, 10); // drive to depot
+            drivetrain.gyroDrive(.75, 45, 90, 10); // drive to depot
             deployTeamMarker();
     }
     public void depotDriveAndDumpTeamMarker(String goldMineralLocation) {
-            drivetrain.gyroDrive(1, 45, -90, 10); // drive to depot
+            drivetrain.gyroDrive(.75, 38, -90, 10); // drive to depot
             deployTeamMarker();
             drivetrain.gyroTurn(.6, 90);
     }
 
     public void returnToCrater(){
         drivetrain.gyroTurn(.4, -90);
-        drivetrain.gyroDrive(1, 58, -90, 10);
+        drivetrain.gyroDrive(.75, 58, -90, 10);
     }
 
     public void scoreLeftMineral() {
@@ -164,6 +164,15 @@ public class MM_Tote_Bot {
         }
         collector.setCollector(0);
     }
+    public void collectMineralsAutomagicly() {
+        collector.setCollector(-1);
+
+        runtime.reset();
+        while (opMode.opModeIsActive() && runtime.seconds() < 2.5) {
+        }
+        collector.setCollector(0);
+    }
+
 
     public boolean moveToLocation(double goalX, double goalY, double goalBearing, double rotateFactor, double timeOutS) {
         boolean closeEnough = false;
@@ -221,14 +230,12 @@ public class MM_Tote_Bot {
     }
 
     public void craterLeaveLander() {
-        //.brakesOn();
         drivetrain.backward(1, 5, 2); // back up to release from lander latch
         drivetrain.strafeRight(1, 14, 3);
         drivetrain.gyroTurn(.6, 104);  // face the target
     }
 
     public void depotLeaveLander() {
-        //.brakesOn();
         drivetrain.backward(1, 5, 2); // back up to release from lander latch
         drivetrain.strafeRight(1, 12, 3);
     }
@@ -240,18 +247,11 @@ public class MM_Tote_Bot {
         return goldMineralLocation;
     }
 
-    public String detectOnly() {
-        String goldMineralLocation = lift.detectOnly();
-        return goldMineralLocation;
-    }
-
     public void turnOnArmForAutoAndCollect(double power){
         runtime.reset();
         while(opMode.opModeIsActive() && runtime.seconds() < 1.5){
             arm.turnOnArm(power);
         }
-        while(opMode.opModeIsActive() && runtime.seconds() < 3){
-            collector.setCollector(-1);
-        }
+        collectMineralsAutomagicly();
     }
 }
