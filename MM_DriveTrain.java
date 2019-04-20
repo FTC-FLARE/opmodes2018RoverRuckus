@@ -300,10 +300,10 @@ public class MM_DriveTrain {
     }
 
     public void moveRobot() {
-        flMotor.setPower(setMinPower(frontLeftPowerForVuforia * 0.3));
-        frMotor.setPower(setMinPower(frontRightPowerForVuforia * 0.3));
-        blMotor.setPower(setMinPower(backLeftPowerForVuforia * 0.3));
-        brMotor.setPower(setMinPower(backRightPowerForVuforia * 0.3));
+        flMotor.setPower(setMinPower(frontLeftPowerForVuforia * 0.4));
+        frMotor.setPower(setMinPower(frontRightPowerForVuforia * 0.4));
+        blMotor.setPower(setMinPower(backLeftPowerForVuforia * 0.4));
+        brMotor.setPower(setMinPower(backRightPowerForVuforia * 0.4));
 
         opMode.telemetry.addData("Wheels", "FL[%+5.2f], FR[%+5.2f], BL[%+5.2f], BR[%+5.2f]", frontLeftPowerForVuforia, frontRightPowerForVuforia, backLeftPowerForVuforia, backRightPowerForVuforia);
     }
