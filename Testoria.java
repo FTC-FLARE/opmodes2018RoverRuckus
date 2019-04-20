@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmodes12833;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Testoria", group = "Test")
-//@Disabled
+@Disabled
 public class Testoria extends LinearOpMode {
     private MM_Tote_Bot robot = new MM_Tote_Bot(this);
 
