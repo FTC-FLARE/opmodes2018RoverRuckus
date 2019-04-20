@@ -52,6 +52,28 @@ public class MM_Lift {
         return goldMineralLocation;
     }
 
+    public String detectOnly() {
+        tensorflow.activateTfod();
+
+        while (opMode.opModeIsActive() ) {
+
+            opMode.telemetry.addData("Lift Encoder", lift.getCurrentPosition());
+
+            if (goldMineralLocation.equals("")) {   // We haven't found gold yet
+                goldMineralLocation = tensorflow.mineForGold();
+            } else {  // We already found gold
+                opMode.telemetry.addData("Gold detected", goldMineralLocation);
+            }
+            opMode.telemetry.update();
+        }
+        lift.setPower(0);
+        if (goldMineralLocation.equals("")) {  // We didn't find gold, so use default location
+            goldMineralLocation = "Center";
+        }
+        tensorflow.shutdownTfod();
+        return goldMineralLocation;
+    }
+
     private boolean isTriggered(DigitalChannel Sensor) {
         return !Sensor.getState();
     }
