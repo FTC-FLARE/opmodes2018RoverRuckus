@@ -36,7 +36,7 @@ public class K_TeleOp extends LinearOpMode {
     static final double ELBOW_GEAR_RATIO = 26/1;
     static final double MAX_ELBOW_FORWARD = (ELBOW_GEAR_RATIO *(COUNTS_PER_MOTOR_REV * .75));
     static final int LIFT_HEIGHT = 1000;
-    static final double PHONE_UP = .85;
+    static final double PHONE_UP = .81;
 
     int lastSlideTarget = 0;
     private boolean driveSlow = true;

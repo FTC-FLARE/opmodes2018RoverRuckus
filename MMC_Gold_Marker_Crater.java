@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name = "Crater Gold Marker Crater", group = "MM")
+@Autonomous(name = "Crater - 1 mineral", group = "MM")
 //@Disabled
 public class MMC_Gold_Marker_Crater extends LinearOpMode {
     private MM_Tote_Bot robot = new MM_Tote_Bot(this);
@@ -19,8 +19,16 @@ public class MMC_Gold_Marker_Crater extends LinearOpMode {
         robot.init();
         runtime.reset();
 
-        telemetry.addLine("Press Play to start");
-        telemetry.update();
+        robot.adjustPhone();
+
+        while (!isStarted()){
+            telemetry.addLine("Press 'Play' to start or 'A' to adjust phone");
+            telemetry.update();
+
+            if (gamepad1.a){
+                robot.adjustPhone();
+            }
+        }
 
         waitForStart();
 

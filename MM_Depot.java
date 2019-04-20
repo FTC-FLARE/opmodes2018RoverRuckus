@@ -19,8 +19,16 @@ public class MM_Depot extends LinearOpMode {
         robot.init();
         runtime.reset();
 
-        telemetry.addLine("Press Play to start");
-        telemetry.update();
+        robot.adjustPhone();
+
+        while (!isStarted()){
+            telemetry.addLine("Press 'Play' to start or 'A' to adjust phone");
+            telemetry.update();
+
+            if (gamepad1.a){
+                robot.adjustPhone();
+            }
+        }
 
         waitForStart();
 
@@ -48,6 +56,6 @@ public class MM_Depot extends LinearOpMode {
 
         robot.depotDriveAndDumpTeamMarker(goldMineralLocation);
         robot.drivetrain.strafeRight(1, 7, 4);
-        robot.drivetrain.gyroDrive(.75, 61, 90, 10); // drive to opponent crater
+        robot.drivetrain.gyroDrive(.75, 63, 90, 10); // drive to opponent crater
         }
 }

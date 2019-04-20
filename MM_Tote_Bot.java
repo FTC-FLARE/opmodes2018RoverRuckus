@@ -17,11 +17,13 @@ public class MM_Tote_Bot {
     private LinearOpMode opMode;
     private ElapsedTime runtime = new ElapsedTime();
 
-    static final double PHONE_DOWN = .72;
-    static final double PHONE_UP = .82;
+    static final double PHONE_DOWN = .725;
+    static final double PHONE_UP = .81;
 
     static final double HITTER_IN = .85;
     static final double HITTER_OUT = .25;
+
+    public double phonePosition = PHONE_DOWN;
 
     public MM_Tote_Bot(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -35,7 +37,7 @@ public class MM_Tote_Bot {
         lift = new MM_Lift(opMode, vuforiaNav.getVuforia());
         phoneTilt = opMode.hardwareMap.get(Servo.class, "phoneTilt");
         mineralHitter = opMode.hardwareMap.get(Servo.class, "mineralHitter");
-        movePhoneUp();
+        movePhoneDown();
         hitterIn();
     }
 
@@ -45,6 +47,10 @@ public class MM_Tote_Bot {
 
     public void movePhoneDown() {
         phoneTilt.setPosition(PHONE_DOWN);
+    }
+
+    public void movePhoneCustom() {
+        phoneTilt.setPosition(phonePosition);
     }
 
     public void
@@ -241,9 +247,15 @@ public class MM_Tote_Bot {
     }
 
     public String deployAndDetect() {
-        movePhoneDown();
+        movePhoneCustom();
         String goldMineralLocation = lift.deployAndDetect();
         movePhoneUp();
+        return goldMineralLocation;
+    }
+
+    public String detectOnly() {
+        movePhoneCustom();
+        String goldMineralLocation = lift.detectOnly();
         return goldMineralLocation;
     }
 
@@ -253,5 +265,37 @@ public class MM_Tote_Bot {
             arm.turnOnArm(power);
         }
         collectMineralsAutomagicly();
+    }
+
+    public void adjustPhone(){
+
+        boolean isHandled = false;
+
+        while (!opMode.gamepad1.b && !opMode.isStarted()) {
+            if (!isHandled) {
+                if (opMode.gamepad1.dpad_up) {
+                    phonePosition += .005;
+                    movePhoneCustom();
+                    isHandled = true;
+                } else if (opMode.gamepad1.dpad_down) {
+                    phonePosition -= .005;
+                    movePhoneCustom();
+                    isHandled = true;
+                }
+            }
+
+            else if (!opMode.gamepad1.dpad_up && !opMode.gamepad1.dpad_down && isHandled)
+                isHandled = false;
+
+            opMode.telemetry.addLine("Set phone position = press 'B' when done");
+            opMode.telemetry.addLine(" ");
+            opMode.telemetry.addData("Current Position:", "%.3f", phonePosition);
+            opMode.telemetry.addLine(" ");
+            opMode.telemetry.addLine("D-pad Up: raise phone");
+            opMode.telemetry.addLine("D-pad Down: lower phone");
+            opMode.telemetry.update();
+        }
+
+        movePhoneUp();
     }
 }
