@@ -29,6 +29,7 @@ public class K_TeleOp extends LinearOpMode {
 
     private DcMotor liftMotor = null;
 
+
     static final int SLIDE_INCREMENT = 250;
     static final int ELBOW_INCREMENT = 500;
     static final int ELBOW_SLOW_INCREMENT = 150;
@@ -45,6 +46,7 @@ public class K_TeleOp extends LinearOpMode {
 
     private LinearOpMode opMode;
     private Servo phoneTilt = null;
+    private Servo rangeServoBack = null;
 
     static final double HITTER_IN = .85;
     static final double HITTER_OUT = .25;
@@ -58,6 +60,10 @@ public class K_TeleOp extends LinearOpMode {
         getToolHardware();
 
         movePhoneUp();
+        hitterIn();
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
         waitForStart();
 
@@ -68,7 +74,6 @@ public class K_TeleOp extends LinearOpMode {
             elbowControl();
             slideControl();
             liftControl();
-            hitterIn();
 
             telemetry.update();
         }
@@ -125,8 +130,6 @@ public class K_TeleOp extends LinearOpMode {
         else {
             collectorPower = 0;
         }
-
-
 
         collectorMotor.setPower(collectorPower);
     }
@@ -292,11 +295,14 @@ public class K_TeleOp extends LinearOpMode {
         phoneTilt = hardwareMap.get(Servo.class, "phoneTilt");
         mineralHitter = hardwareMap.get(Servo.class, "mineralHitter");
 
+        rangeServoBack = hardwareMap.get(Servo.class, "backRangeServo");
     }
     public void movePhoneUp () {
         phoneTilt.setPosition(PHONE_UP);
+        rangeServoBack.setPosition(1);
     }
     public void hitterIn() {
         mineralHitter.setPosition(HITTER_IN);
+        rangeServoBack.setPosition(.95);
     }
 }
